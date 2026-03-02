@@ -17,7 +17,7 @@ const props = defineProps({
   },
 })
 
-const API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8000').replace(/\/$/, '')
+const API_BASE = (import.meta.env.VITE_API_BASE || 'https://alkhat-api.onrender.com').replace(/\/$/, '')
 const api = axios.create({
   baseURL: `${API_BASE}/api`,
 })
