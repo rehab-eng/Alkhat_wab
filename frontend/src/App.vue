@@ -1,8 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import Navbar from './components/Navbar.vue'
-import HomeView from './views/HomeView.vue'
-import DashboardView from './views/DashboardView.vue'
 import { messages } from './i18n'
 
 const isDark = ref(false)
@@ -72,8 +70,9 @@ const setLanguage = (value) => {
     />
 
     <main>
-      <HomeView :t="t" :language="language" :is-rtl="isRtl" />
-      <DashboardView :t="t" :language="language" :is-rtl="isRtl" />
+      <router-view v-slot="{ Component }">
+        <component :is="Component" :t="t" :language="language" :is-rtl="isRtl" />
+      </router-view>
     </main>
 
     <footer class="border-t border-slate-200/60 bg-white/70 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-400">

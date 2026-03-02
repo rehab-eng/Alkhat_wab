@@ -27,12 +27,12 @@ const mobileOpen = ref(false)
 const links = computed(() => {
   props.language
   return [
-    { label: props.t('navHome'), href: '#home' },
-    { label: props.t('navServices'), href: '#services' },
-    { label: props.t('navProjects'), href: '#projects' },
-    { label: props.t('navAbout'), href: '#about' },
-    { label: props.t('navContact'), href: '#contact' },
-    { label: props.t('navDashboard'), href: '#dashboard' },
+    { label: props.t('navHome'), href: '/#home' },
+    { label: props.t('navServices'), href: '/#services' },
+    { label: props.t('navProjects'), href: '/#projects' },
+    { label: props.t('navAbout'), href: '/#about' },
+    { label: props.t('navContact'), href: '/#contact' },
+    { label: props.t('navDashboard'), href: '/dashboard' },
   ]
 })
 
