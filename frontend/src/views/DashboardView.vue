@@ -23,7 +23,7 @@ const api = axios.create({
 })
 
 const token = ref(localStorage.getItem('khututs-token') || '')
-const authDisabled = false
+const authDisabled = true
 const loginError = ref('')
 const loginLoading = ref(false)
 const loginForm = reactive({

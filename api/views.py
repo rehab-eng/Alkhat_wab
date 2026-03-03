@@ -19,42 +19,42 @@ from .serializers import (
 class TruckViewSet(viewsets.ModelViewSet):
     queryset = Truck.objects.all().order_by('-id')
     serializer_class = TruckSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     parser_classes = [MultiPartParser, FormParser]
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all().order_by('-date', '-id')
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     parser_classes = [MultiPartParser, FormParser]
 
 
 class StatViewSet(viewsets.ModelViewSet):
     queryset = Stat.objects.all().order_by('order', 'id')
     serializer_class = StatSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     parser_classes = [MultiPartParser, FormParser]
 
 
 class VehicleViewSet(viewsets.ModelViewSet):
     queryset = Vehicle.objects.all().order_by('-updated_at', '-id')
     serializer_class = VehicleSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     parser_classes = [MultiPartParser, FormParser]
 
 
 class StatisticViewSet(viewsets.ModelViewSet):
     queryset = Statistic.objects.all().order_by('order', 'id')
     serializer_class = StatisticSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     parser_classes = [MultiPartParser, FormParser]
 
 
 class SiteSettingViewSet(viewsets.ModelViewSet):
     queryset = SiteSetting.objects.all().order_by('-updated_at', '-id')
     serializer_class = SiteSettingSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     parser_classes = [MultiPartParser, FormParser]
 
     @action(detail=False, methods=['post'])
