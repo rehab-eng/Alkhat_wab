@@ -23,6 +23,7 @@ const api = axios.create({
 })
 
 const token = ref(localStorage.getItem('khututs-token') || '')
+const authDisabled = true
 const loginError = ref('')
 const loginLoading = ref(false)
 
@@ -50,7 +51,8 @@ const stats = ref([])
 const loading = ref(false)
 const actionStatus = ref('')
 
-const isAuthenticated = computed(() => Boolean(token.value))
+const isAuthenticated = computed(() => authDisabled || Boolean(token.value))
+const showLogout = computed(() => !authDisabled && Boolean(token.value))
 
 const setAuthToken = (value) => {
   token.value = value
@@ -199,6 +201,11 @@ const deleteProject = async (projectId) => {
 }
 
 onMounted(() => {
+  if (authDisabled) {
+    setAuthToken('')
+    loadDashboard()
+    return
+  }
   if (token.value) {
     setAuthToken(token.value)
     loadDashboard()
@@ -224,7 +231,7 @@ onMounted(() => {
               {{ isAuthenticated ? t('sessionActive') : t('adminSecureNote') }}
             </span>
             <button
-              v-if="isAuthenticated"
+              v-if="showLogout"
               class="rounded-full border border-slate-200/70 bg-white/70 px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-700 transition hover:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200"
               @click="logout"
             >
