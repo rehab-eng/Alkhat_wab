@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import axios from 'axios'
 
@@ -23,36 +23,84 @@ const api = axios.create({
 })
 
 const token = ref(localStorage.getItem('khututs-token') || '')
-const authDisabled = true
+const authDisabled = false
 const loginError = ref('')
 const loginLoading = ref(false)
-
 const loginForm = reactive({
   username: '',
   password: '',
 })
 
-const truckForm = reactive({
+const vehicles = ref([])
+const statistics = ref([])
+const siteSetting = ref(null)
+
+const vehicleForm = reactive({
+  id: null,
   title: '',
   description: '',
   image: null,
 })
+const vehicleImagePreview = ref('')
+const vehicleSaving = ref(false)
 
-const projectForm = reactive({
-  title: '',
-  description: '',
-  date: '',
-  image: null,
+const statForm = reactive({
+  key: '',
+  label_en: '',
+  label_ar: '',
+  caption_en: '',
+  caption_ar: '',
+  value: 0,
+  suffix: '',
+  order: 0,
+})
+const statSaving = ref(false)
+
+const siteForm = reactive({
+  site_name_en: '',
+  site_name_ar: '',
+  hero_title_en: '',
+  hero_title_ar: '',
+  hero_desc_en: '',
+  hero_desc_ar: '',
+  address_en: '',
+  address_ar: '',
+  contact_phone: '',
+  contact_email: '',
+  logo: null,
+  hero_image: null,
+})
+const siteSaving = ref(false)
+const siteLogoPreview = ref('')
+const siteHeroPreview = ref('')
+
+const loading = reactive({
+  vehicles: false,
+  statistics: false,
+  settings: false,
 })
 
-const trucks = ref([])
-const projects = ref([])
-const stats = ref([])
-const loading = ref(false)
-const actionStatus = ref('')
+const status = reactive({
+  message: '',
+  type: 'neutral',
+})
+
+const apiOnline = ref(true)
 
 const isAuthenticated = computed(() => authDisabled || Boolean(token.value))
 const showLogout = computed(() => !authDisabled && Boolean(token.value))
+
+const statusClass = computed(() => {
+  if (!status.message) return ''
+  if (status.type === 'success') return 'border-emerald-400/60 text-emerald-200 bg-emerald-500/10'
+  if (status.type === 'error') return 'border-rose-400/60 text-rose-200 bg-rose-500/10'
+  return 'border-slate-500/60 text-slate-200 bg-slate-800/60'
+})
+
+const setStatus = (type, message) => {
+  status.type = type
+  status.message = message
+}
 
 const setAuthToken = (value) => {
   token.value = value
@@ -75,33 +123,85 @@ const toFormData = (data) => {
   return formData
 }
 
-const statLabelMap = (key) => {
-  const map = {
-    years: 'statYears',
-    projects: 'statProjects',
-    fleet: 'statFleet',
-    safety: 'statSafety',
+const resolveImage = (item, key = 'image') => {
+  if (!item) return ''
+  const rawUrl = item[`${key}_url`] || item[key] || ''
+  if (!rawUrl) return ''
+  if (rawUrl.startsWith('http')) return rawUrl
+  return `${API_BASE}${rawUrl}`
+}
+
+const formatDate = (value) => {
+  if (!value) return '--'
+  try {
+    return new Date(value).toLocaleString(props.language === 'ar' ? 'ar' : 'en')
+  } catch (error) {
+    return value
   }
-  return props.t(map[key] || key)
+}
+
+const applySiteForm = (setting) => {
+  siteForm.site_name_en = setting?.site_name_en || ''
+  siteForm.site_name_ar = setting?.site_name_ar || ''
+  siteForm.hero_title_en = setting?.hero_title_en || ''
+  siteForm.hero_title_ar = setting?.hero_title_ar || ''
+  siteForm.hero_desc_en = setting?.hero_desc_en || ''
+  siteForm.hero_desc_ar = setting?.hero_desc_ar || ''
+  siteForm.address_en = setting?.address_en || ''
+  siteForm.address_ar = setting?.address_ar || ''
+  siteForm.contact_phone = setting?.contact_phone || ''
+  siteForm.contact_email = setting?.contact_email || ''
+  siteForm.logo = null
+  siteForm.hero_image = null
+  siteLogoPreview.value = resolveImage(setting, 'logo')
+  siteHeroPreview.value = resolveImage(setting, 'hero_image')
+}
+
+const fetchVehicles = async () => {
+  loading.vehicles = true
+  try {
+    const { data } = await api.get('/vehicles/')
+    vehicles.value = Array.isArray(data) ? data : []
+  } catch (error) {
+    apiOnline.value = false
+    vehicles.value = []
+  } finally {
+    loading.vehicles = false
+  }
+}
+
+const fetchStatistics = async () => {
+  loading.statistics = true
+  try {
+    const { data } = await api.get('/statistics/')
+    statistics.value = Array.isArray(data) ? data : []
+  } catch (error) {
+    apiOnline.value = false
+    statistics.value = []
+  } finally {
+    loading.statistics = false
+  }
+}
+
+const fetchSiteSettings = async () => {
+  loading.settings = true
+  try {
+    const { data } = await api.get('/site-settings/')
+    const setting = Array.isArray(data) ? data[0] : data
+    siteSetting.value = setting || null
+    applySiteForm(setting)
+  } catch (error) {
+    apiOnline.value = false
+    siteSetting.value = null
+    applySiteForm(null)
+  } finally {
+    loading.settings = false
+  }
 }
 
 const loadDashboard = async () => {
-  loading.value = true
-  actionStatus.value = ''
-  try {
-    const [truckRes, projectRes, statRes] = await Promise.all([
-      api.get('/trucks/'),
-      api.get('/projects/'),
-      api.get('/stats/'),
-    ])
-    trucks.value = Array.isArray(truckRes.data) ? truckRes.data : []
-    projects.value = Array.isArray(projectRes.data) ? projectRes.data : []
-    stats.value = Array.isArray(statRes.data) ? statRes.data : []
-  } catch (error) {
-    actionStatus.value = props.t('loginError')
-  } finally {
-    loading.value = false
-  }
+  apiOnline.value = true
+  await Promise.all([fetchVehicles(), fetchStatistics(), fetchSiteSettings()])
 }
 
 const login = async () => {
@@ -125,78 +225,263 @@ const logout = () => {
   setAuthToken('')
 }
 
-const handleTruckImage = (event) => {
-  truckForm.image = event.target.files[0] || null
+const resetVehicleForm = () => {
+  vehicleForm.id = null
+  vehicleForm.title = ''
+  vehicleForm.description = ''
+  vehicleForm.image = null
+  vehicleImagePreview.value = ''
 }
 
-const handleProjectImage = (event) => {
-  projectForm.image = event.target.files[0] || null
+const startEditVehicle = (vehicle) => {
+  vehicleForm.id = vehicle.id
+  vehicleForm.title = vehicle.title
+  vehicleForm.description = vehicle.description
+  vehicleForm.image = null
+  vehicleImagePreview.value = resolveImage(vehicle)
 }
 
-const createTruck = async () => {
-  actionStatus.value = ''
-  const formData = toFormData(truckForm)
+const handleVehicleImage = (event) => {
+  const file = event.target.files[0]
+  vehicleForm.image = file || null
+  vehicleImagePreview.value = file ? URL.createObjectURL(file) : vehicleImagePreview.value
+}
+
+const saveVehicle = async () => {
+  if (!vehicleForm.title) {
+    setStatus('error', props.t('statusMissing'))
+    return
+  }
+  vehicleSaving.value = true
+  const payload = {
+    title: vehicleForm.title,
+    description: vehicleForm.description,
+    image: vehicleForm.image,
+  }
+  const formData = toFormData(payload)
+
+  if (vehicleForm.id) {
+    const index = vehicles.value.findIndex((item) => item.id === vehicleForm.id)
+    const previous = index >= 0 ? { ...vehicles.value[index] } : null
+    if (index >= 0) {
+      vehicles.value[index] = {
+        ...vehicles.value[index],
+        title: vehicleForm.title,
+        description: vehicleForm.description,
+        image_url: vehicleImagePreview.value || vehicles.value[index]?.image_url,
+      }
+    }
+    try {
+      const { data } = await api.patch(`/vehicles/${vehicleForm.id}/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      if (index >= 0) {
+        vehicles.value[index] = data
+      }
+      setStatus('success', props.t('statusSaved'))
+      resetVehicleForm()
+    } catch (error) {
+      if (index >= 0 && previous) {
+        vehicles.value[index] = previous
+      }
+      setStatus('error', props.t('statusError'))
+    } finally {
+      vehicleSaving.value = false
+    }
+    return
+  }
+
+  const tempId = `tmp-${Date.now()}`
+  const optimistic = {
+    id: tempId,
+    title: vehicleForm.title,
+    description: vehicleForm.description,
+    image_url: vehicleImagePreview.value,
+    updated_at: new Date().toISOString(),
+  }
+  vehicles.value = [optimistic, ...vehicles.value]
+
   try {
-    await api.post('/trucks/', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-    truckForm.title = ''
-    truckForm.description = ''
-    truckForm.image = null
-    await loadDashboard()
-    actionStatus.value = props.t('statsSaved')
+    const { data } = await api.post('/vehicles/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    const index = vehicles.value.findIndex((item) => item.id === tempId)
+    if (index >= 0) {
+      vehicles.value[index] = data
+    }
+    setStatus('success', props.t('statusSaved'))
+    resetVehicleForm()
   } catch (error) {
-    actionStatus.value = props.t('loginError')
+    vehicles.value = vehicles.value.filter((item) => item.id !== tempId)
+    setStatus('error', props.t('statusError'))
+  } finally {
+    vehicleSaving.value = false
   }
 }
 
-const createProject = async () => {
-  actionStatus.value = ''
-  const formData = toFormData(projectForm)
+const deleteVehicle = async (vehicle) => {
+  const snapshot = [...vehicles.value]
+  vehicles.value = vehicles.value.filter((item) => item.id !== vehicle.id)
   try {
-    await api.post('/projects/', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-    projectForm.title = ''
-    projectForm.description = ''
-    projectForm.date = ''
-    projectForm.image = null
-    await loadDashboard()
-    actionStatus.value = props.t('statsSaved')
+    await api.delete(`/vehicles/${vehicle.id}/`)
+    setStatus('success', props.t('statusDeleted'))
   } catch (error) {
-    actionStatus.value = props.t('loginError')
+    vehicles.value = snapshot
+    setStatus('error', props.t('statusError'))
   }
 }
 
-const updateStat = async (stat) => {
-  actionStatus.value = ''
-  const formData = toFormData({
+const resetStatForm = () => {
+  statForm.key = ''
+  statForm.label_en = ''
+  statForm.label_ar = ''
+  statForm.caption_en = ''
+  statForm.caption_ar = ''
+  statForm.value = 0
+  statForm.suffix = ''
+  statForm.order = 0
+}
+
+const createStatistic = async () => {
+  if (!statForm.key || !statForm.label_en) {
+    setStatus('error', props.t('statusMissing'))
+    return
+  }
+  statSaving.value = true
+  const payload = { ...statForm }
+  const formData = toFormData(payload)
+  const tempId = `tmp-${Date.now()}`
+  const optimistic = {
+    id: tempId,
+    ...payload,
+    updated_at: new Date().toISOString(),
+  }
+  statistics.value = [...statistics.value, optimistic]
+
+  try {
+    const { data } = await api.post('/statistics/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    const index = statistics.value.findIndex((item) => item.id === tempId)
+    if (index >= 0) {
+      statistics.value[index] = data
+    }
+    setStatus('success', props.t('statusSaved'))
+    resetStatForm()
+  } catch (error) {
+    statistics.value = statistics.value.filter((item) => item.id !== tempId)
+    setStatus('error', props.t('statusError'))
+  } finally {
+    statSaving.value = false
+  }
+}
+
+const updateStatistic = async (stat) => {
+  const previous = { ...stat }
+  const payload = {
     key: stat.key,
+    label_en: stat.label_en,
+    label_ar: stat.label_ar,
+    caption_en: stat.caption_en,
+    caption_ar: stat.caption_ar,
     value: stat.value,
     suffix: stat.suffix,
     order: stat.order,
-  })
+  }
+  const formData = toFormData(payload)
   try {
-    await api.patch(`/stats/${stat.id}/`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-    actionStatus.value = props.t('statsSaved')
+    const { data } = await api.patch(`/statistics/${stat.id}/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    const index = statistics.value.findIndex((item) => item.id === stat.id)
+    if (index >= 0) {
+      statistics.value[index] = data
+    }
+    setStatus('success', props.t('statusSaved'))
   } catch (error) {
-    actionStatus.value = props.t('loginError')
+    const index = statistics.value.findIndex((item) => item.id === stat.id)
+    if (index >= 0) {
+      statistics.value[index] = previous
+    }
+    setStatus('error', props.t('statusError'))
   }
 }
 
-const deleteTruck = async (truckId) => {
-  actionStatus.value = ''
+const deleteStatistic = async (stat) => {
+  const snapshot = [...statistics.value]
+  statistics.value = statistics.value.filter((item) => item.id !== stat.id)
   try {
-    await api.delete(`/trucks/${truckId}/`)
-    await loadDashboard()
+    await api.delete(`/statistics/${stat.id}/`)
+    setStatus('success', props.t('statusDeleted'))
   } catch (error) {
-    actionStatus.value = props.t('loginError')
+    statistics.value = snapshot
+    setStatus('error', props.t('statusError'))
   }
 }
 
-const deleteProject = async (projectId) => {
-  actionStatus.value = ''
+const handleSiteLogo = (event) => {
+  const file = event.target.files[0]
+  siteForm.logo = file || null
+  siteLogoPreview.value = file ? URL.createObjectURL(file) : siteLogoPreview.value
+}
+
+const handleSiteHero = (event) => {
+  const file = event.target.files[0]
+  siteForm.hero_image = file || null
+  siteHeroPreview.value = file ? URL.createObjectURL(file) : siteHeroPreview.value
+}
+
+const saveSiteSettings = async () => {
+  siteSaving.value = true
+  const payload = {
+    site_name_en: siteForm.site_name_en,
+    site_name_ar: siteForm.site_name_ar,
+    hero_title_en: siteForm.hero_title_en,
+    hero_title_ar: siteForm.hero_title_ar,
+    hero_desc_en: siteForm.hero_desc_en,
+    hero_desc_ar: siteForm.hero_desc_ar,
+    address_en: siteForm.address_en,
+    address_ar: siteForm.address_ar,
+    contact_phone: siteForm.contact_phone,
+    contact_email: siteForm.contact_email,
+    logo: siteForm.logo,
+    hero_image: siteForm.hero_image,
+  }
+  const formData = toFormData(payload)
+
   try {
-    await api.delete(`/projects/${projectId}/`)
-    await loadDashboard()
+    if (siteSetting.value?.id) {
+      const { data } = await api.patch(`/site-settings/${siteSetting.value.id}/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      siteSetting.value = data
+      applySiteForm(data)
+      setStatus('success', props.t('settingsSaved'))
+    } else {
+      const { data } = await api.post('/site-settings/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      siteSetting.value = data
+      applySiteForm(data)
+      setStatus('success', props.t('settingsSaved'))
+    }
   } catch (error) {
-    actionStatus.value = props.t('loginError')
+    setStatus('error', props.t('statusError'))
+  } finally {
+    siteSaving.value = false
+  }
+}
+
+const refreshPublic = async () => {
+  try {
+    const { data } = await api.post('/site-settings/refresh/', null, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    siteSetting.value = data
+    applySiteForm(data)
+    setStatus('success', props.t('consoleRefreshSuccess'))
+  } catch (error) {
+    setStatus('error', props.t('consoleRefreshError'))
   }
 }
 
@@ -214,242 +499,383 @@ onMounted(() => {
 </script>
 
 <template>
-  <section id="dashboard" class="relative py-16 lg:py-24">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.2),_transparent_60%)]"></div>
-    <div class="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col gap-4">
-        <p class="text-xs uppercase tracking-[0.4em] text-[#bfa76a]">{{ t('adminSecureNote') }}</p>
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between" :class="isRtl ? 'lg:flex-row-reverse' : ''">
+  <section class="min-h-screen bg-[#0b0f14] text-slate-100">
+    <div class="mx-auto w-full max-w-7xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+      <header class="border border-[#1f2a37] bg-[#0f172a]/80 p-6">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between" :class="isRtl ? 'lg:flex-row-reverse' : ''">
           <div :class="isRtl ? 'text-right' : ''">
-            <h2 class="text-3xl font-semibold text-slate-900 dark:text-white">{{ t('adminTitle') }}</h2>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">{{ t('adminSubtitle') }}</p>
+            <p class="text-xs uppercase tracking-[0.35em] text-[#d4af37]">{{ t('consoleOverline') }}</p>
+            <h1 class="mt-3 text-3xl font-semibold text-white">{{ t('consoleTitle') }}</h1>
+            <p class="mt-2 max-w-2xl text-sm text-slate-300">{{ t('consoleSubtitle') }}</p>
           </div>
-          <div class="flex items-center gap-3">
-            <span
-              class="rounded-full border border-[#d4af37]/40 bg-[#f3e2a2]/30 px-4 py-2 text-xs uppercase tracking-[0.35em] text-[#8c774a]"
+          <div class="flex flex-wrap items-center gap-3" :class="isRtl ? 'justify-end' : ''">
+            <div class="border border-[#1f2a37] bg-[#0b1220] px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-300">
+              {{ t('consoleStatusLabel') }}: <span class="text-white">{{ apiOnline ? t('consoleStatusOnline') : t('consoleStatusOffline') }}</span>
+            </div>
+            <div class="border border-[#1f2a37] bg-[#0b1220] px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-300">
+              {{ t('consoleAuthLabel') }}: <span class="text-white">{{ isAuthenticated ? t('consoleAuthGranted') : t('consoleAuthRequired') }}</span>
+            </div>
+            <button
+              class="border border-[#d4af37] bg-[#d4af37] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900 transition hover:bg-[#f3e2a2]"
+              @click="refreshPublic"
             >
-              {{ isAuthenticated ? t('sessionActive') : t('adminSecureNote') }}
-            </span>
+              {{ t('consoleInstantUpdate') }}
+            </button>
             <button
               v-if="showLogout"
-              class="rounded-full border border-slate-200/70 bg-white/70 px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-700 transition hover:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200"
+              class="border border-[#1f2a37] bg-transparent px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-200 transition hover:border-[#d4af37]"
               @click="logout"
             >
               {{ t('logoutButton') }}
             </button>
           </div>
         </div>
+        <p class="mt-4 text-xs uppercase tracking-[0.3em] text-slate-400" :class="isRtl ? 'text-right' : ''">
+          {{ t('consoleInstantHint') }}
+        </p>
+      </header>
+
+      <div v-if="status.message" class="mt-4 border px-4 py-3 text-xs uppercase tracking-[0.3em]" :class="statusClass">
+        {{ status.message }}
       </div>
 
-      <div class="mt-10 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div class="space-y-6">
-          <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
-            <div class="flex items-center justify-between">
-              <div :class="isRtl ? 'text-right' : ''">
-                <p class="text-xs uppercase tracking-[0.3em] text-[#bfa76a]">{{ t('truckFormTitle') }}</p>
-                <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">{{ t('truckFormSubtitle') }}</p>
-              </div>
-              <span class="rounded-full bg-[#d4af37]/15 px-3 py-1 text-xs uppercase tracking-[0.2em] text-[#bfa76a]">
-                {{ t('uploading') }}
-              </span>
-            </div>
-            <div class="mt-5 grid gap-4 md:grid-cols-2">
-              <input
-                v-model="truckForm.title"
-                :placeholder="t('truckTitleLabel')"
-                class="rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none focus:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-100"
-              />
-              <input
-                v-model="truckForm.description"
-                :placeholder="t('truckDescLabel')"
-                class="rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none focus:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-100"
-              />
-              <input
-                type="file"
-                accept="image/*"
-                class="rounded-2xl border border-dashed border-[#d4af37]/40 bg-white/70 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-600 dark:bg-slate-900/60 dark:text-slate-300"
-                @change="handleTruckImage"
-              />
-              <button
-                class="rounded-2xl bg-slate-900 px-4 py-3 text-xs uppercase tracking-[0.3em] text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900"
-                @click="createTruck"
-              >
-                {{ t('truckSubmit') }}
-              </button>
-            </div>
-          </div>
+      <div class="mt-6 grid gap-6 lg:grid-cols-[240px_1fr]">
+        <aside class="border border-[#1f2a37] bg-[#0f172a]/70 p-5" :class="isRtl ? 'text-right' : ''">
+          <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('dashboardOverline') }}</p>
+          <h2 class="mt-2 text-lg font-semibold text-white">{{ t('dashboardTitle') }}</h2>
+          <nav class="mt-6 space-y-3 text-sm">
+            <a href="#overview" class="block border border-transparent px-3 py-2 text-slate-300 transition hover:border-[#d4af37] hover:text-white">
+              {{ t('navOverview') }}
+            </a>
+            <a href="#vehicles" class="block border border-transparent px-3 py-2 text-slate-300 transition hover:border-[#d4af37] hover:text-white">
+              {{ t('navVehicles') }}
+            </a>
+            <a href="#statistics" class="block border border-transparent px-3 py-2 text-slate-300 transition hover:border-[#d4af37] hover:text-white">
+              {{ t('navStatistics') }}
+            </a>
+            <a href="#settings" class="block border border-transparent px-3 py-2 text-slate-300 transition hover:border-[#d4af37] hover:text-white">
+              {{ t('navSettings') }}
+            </a>
+          </nav>
+        </aside>
 
-          <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
-            <div class="flex items-center justify-between">
-              <div :class="isRtl ? 'text-right' : ''">
-                <p class="text-xs uppercase tracking-[0.3em] text-[#bfa76a]">{{ t('projectFormTitle') }}</p>
-                <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">{{ t('projectFormSubtitle') }}</p>
+        <main class="space-y-10">
+          <section id="overview" class="border border-[#1f2a37] bg-[#0f172a]/70 p-6" :class="isRtl ? 'text-right' : ''">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between" :class="isRtl ? 'lg:flex-row-reverse' : ''">
+              <div>
+                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('consoleLastSync') }}</p>
+                <p class="mt-2 text-sm text-white">{{ formatDate(siteSetting?.updated_at) }}</p>
               </div>
-              <span class="rounded-full bg-[#d4af37]/15 px-3 py-1 text-xs uppercase tracking-[0.2em] text-[#bfa76a]">
-                {{ t('saving') }}
-              </span>
+              <div class="grid gap-4 sm:grid-cols-3">
+                <div class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('overviewVehicles') }}</p>
+                  <p class="mt-2 text-2xl font-semibold text-white">{{ vehicles.length }}</p>
+                </div>
+                <div class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('overviewStatistics') }}</p>
+                  <p class="mt-2 text-2xl font-semibold text-white">{{ statistics.length }}</p>
+                </div>
+                <div class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('overviewSettings') }}</p>
+                  <p class="mt-2 text-2xl font-semibold text-white">{{ siteSetting ? 1 : 0 }}</p>
+                </div>
+              </div>
             </div>
-            <div class="mt-5 grid gap-4 md:grid-cols-2">
-              <input
-                v-model="projectForm.title"
-                :placeholder="t('projectTitleLabel')"
-                class="rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none focus:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-100"
-              />
-              <input
-                v-model="projectForm.description"
-                :placeholder="t('projectDescLabel')"
-                class="rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none focus:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-100"
-              />
-              <input
-                v-model="projectForm.date"
-                type="date"
-                class="rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none focus:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-100"
-              />
-              <input
-                type="file"
-                accept="image/*"
-                class="rounded-2xl border border-dashed border-[#d4af37]/40 bg-white/70 px-4 py-3 text-xs uppercase tracking-[0.25em] text-slate-600 dark:bg-slate-900/60 dark:text-slate-300"
-                @change="handleProjectImage"
-              />
-              <button
-                class="rounded-2xl bg-slate-900 px-4 py-3 text-xs uppercase tracking-[0.3em] text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 md:col-span-2"
-                @click="createProject"
-              >
-                {{ t('projectSubmit') }}
-              </button>
-            </div>
-          </div>
-        </div>
+          </section>
 
-        <div class="space-y-6">
-          <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
-            <div class="flex items-center justify-between">
-              <div :class="isRtl ? 'text-right' : ''">
-                <p class="text-xs uppercase tracking-[0.3em] text-[#bfa76a]">{{ t('statsTitle') }}</p>
-                <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">{{ t('statsSubtitle') }}</p>
-              </div>
-              <span class="rounded-full bg-[#d4af37]/15 px-3 py-1 text-xs uppercase tracking-[0.2em] text-[#bfa76a]">
-                {{ loading ? t('loading') : t('statsSave') }}
-              </span>
+          <section id="vehicles" class="border border-[#1f2a37] bg-[#0f172a]/70 p-6">
+            <div class="flex flex-col gap-2" :class="isRtl ? 'text-right' : ''">
+              <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('vehiclesTitle') }}</p>
+              <h3 class="text-2xl font-semibold text-white">{{ t('vehicleFormTitle') }}</h3>
+              <p class="text-sm text-slate-400">{{ t('vehiclesSubtitle') }}</p>
             </div>
-            <div class="mt-5 space-y-4">
-              <div
-                v-for="stat in stats"
-                :key="stat.id"
-                class="rounded-2xl border border-slate-200/70 bg-white/70 p-4 dark:border-white/10 dark:bg-slate-900/60"
-              >
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" :class="isRtl ? 'sm:flex-row-reverse text-right' : ''">
-                  <div>
-                    <p class="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">
-                      {{ statLabelMap(stat.key) }}
-                    </p>
+
+            <div class="mt-6 grid gap-4 lg:grid-cols-[1fr_260px]">
+              <div class="grid gap-4">
+                <input
+                  v-model="vehicleForm.title"
+                  :placeholder="t('vehicleFieldTitle')"
+                  class="w-full border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200 outline-none"
+                  :class="isRtl ? 'text-right' : ''"
+                />
+                <textarea
+                  v-model="vehicleForm.description"
+                  :placeholder="t('vehicleFieldDescription')"
+                  rows="3"
+                  class="w-full border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200 outline-none"
+                  :class="isRtl ? 'text-right' : ''"
+                ></textarea>
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="w-full border border-dashed border-[#d4af37]/60 bg-[#0b1220] px-4 py-3 text-xs uppercase tracking-[0.3em] text-slate-300"
+                  @change="handleVehicleImage"
+                />
+                <div class="flex flex-wrap items-center gap-3">
+                  <button
+                    class="border border-[#d4af37] bg-[#d4af37] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900"
+                    @click="saveVehicle"
+                  >
+                    {{ vehicleForm.id ? t('vehicleUpdate') : t('vehicleCreate') }}
+                  </button>
+                  <button
+                    v-if="vehicleForm.id"
+                    class="border border-[#1f2a37] bg-transparent px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-200"
+                    @click="resetVehicleForm"
+                  >
+                    {{ t('vehicleCancel') }}
+                  </button>
+                  <span v-if="vehicleSaving" class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('saving') }}</span>
+                </div>
+              </div>
+              <div class="border border-[#1f2a37] bg-[#0b1220] p-4">
+                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('vehicleFieldImage') }}</p>
+                <div class="mt-4 aspect-[4/3] w-full overflow-hidden border border-[#1f2a37] bg-[#0f172a]">
+                  <img v-if="vehicleImagePreview" :src="vehicleImagePreview" :alt="vehicleForm.title" class="h-full w-full object-cover" />
+                  <div v-else class="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-500">
+                    {{ t('vehicleFieldImage') }}
                   </div>
-                  <div class="flex items-center gap-2">
-                    <input
-                      v-model="stat.value"
-                      type="number"
-                      class="w-24 rounded-xl border border-slate-200/70 bg-white/80 px-3 py-2 text-sm text-slate-800 outline-none focus:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-100"
-                    />
-                    <input
-                      v-model="stat.suffix"
-                      class="w-16 rounded-xl border border-slate-200/70 bg-white/80 px-3 py-2 text-sm text-slate-800 outline-none focus:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-100"
-                    />
-                    <button
-                      class="rounded-full border border-[#d4af37]/40 bg-[#f3e2a2]/30 px-3 py-2 text-xs uppercase tracking-[0.3em] text-[#8c774a] transition hover:bg-[#d4af37]/30"
-                      @click="updateStat(stat)"
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 border border-[#1f2a37]">
+              <div class="flex items-center justify-between border-b border-[#1f2a37] bg-[#0b1220] px-4 py-3">
+                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('vehicleTableTitle') }}</p>
+                <span class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ vehicles.length }}</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-[#0f172a] text-xs uppercase tracking-[0.3em] text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('vehicleTableHeaderTitle') }}</th>
+                      <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('vehicleTableHeaderDescription') }}</th>
+                      <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('vehicleTableHeaderUpdated') }}</th>
+                      <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('vehicleTableHeaderActions') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="vehicle in vehicles"
+                      :key="vehicle.id"
+                      class="border-t border-[#1f2a37] text-slate-200 hover:bg-[#0b1220]"
                     >
-                      {{ t('statsSave') }}
-                    </button>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-3" :class="isRtl ? 'flex-row-reverse' : ''">
+                          <div class="h-10 w-14 overflow-hidden border border-[#1f2a37] bg-[#0f172a]">
+                            <img v-if="resolveImage(vehicle)" :src="resolveImage(vehicle)" :alt="vehicle.title" class="h-full w-full object-cover" />
+                          </div>
+                          <div :class="isRtl ? 'text-right' : ''">
+                            <p class="text-sm font-semibold text-white">{{ vehicle.title }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-slate-400">{{ vehicle.description }}</td>
+                      <td class="px-4 py-3 text-slate-400">{{ formatDate(vehicle.updated_at) }}</td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-3" :class="isRtl ? 'flex-row-reverse' : ''">
+                          <button class="text-xs uppercase tracking-[0.3em] text-[#d4af37]" @click="startEditVehicle(vehicle)">
+                            {{ t('editButton') }}
+                          </button>
+                          <button class="text-xs uppercase tracking-[0.3em] text-rose-300" @click="deleteVehicle(vehicle)">
+                            {{ t('deleteButton') }}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr v-if="!vehicles.length && !loading.vehicles">
+                      <td colspan="4" class="px-4 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500">
+                        {{ t('vehicleEmpty') }}
+                      </td>
+                    </tr>
+                    <tr v-if="loading.vehicles">
+                      <td colspan="4" class="px-4 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500">
+                        {{ t('loading') }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="statistics" class="border border-[#1f2a37] bg-[#0f172a]/70 p-6">
+            <div class="flex flex-col gap-2" :class="isRtl ? 'text-right' : ''">
+              <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('statisticsTitle') }}</p>
+              <h3 class="text-2xl font-semibold text-white">{{ t('statsTitle') }}</h3>
+              <p class="text-sm text-slate-400">{{ t('statisticsSubtitle') }}</p>
+            </div>
+
+            <div class="mt-6 grid gap-4 lg:grid-cols-2">
+              <div class="grid gap-3 border border-[#1f2a37] bg-[#0b1220] p-4">
+                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('statFormTitle') }}</p>
+                <input v-model="statForm.key" :placeholder="t('statKeyLabel')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                <input v-model="statForm.label_en" :placeholder="t('statLabelEn')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                <input v-model="statForm.label_ar" :placeholder="t('statLabelAr')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                <input v-model="statForm.caption_en" :placeholder="t('statCaptionEn')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                <input v-model="statForm.caption_ar" :placeholder="t('statCaptionAr')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                <div class="grid gap-3 sm:grid-cols-3">
+                  <input v-model.number="statForm.value" type="number" :placeholder="t('statValueLabel')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                  <input v-model="statForm.suffix" :placeholder="t('statSuffixLabel')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                  <input v-model.number="statForm.order" type="number" :placeholder="t('statOrderLabel')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                </div>
+                <div class="flex items-center gap-3">
+                  <button class="border border-[#d4af37] bg-[#d4af37] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900" @click="createStatistic">
+                    {{ t('statCreateButton') }}
+                  </button>
+                  <span v-if="statSaving" class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('saving') }}</span>
+                </div>
+              </div>
+
+              <div class="border border-[#1f2a37]">
+                <div class="flex items-center justify-between border-b border-[#1f2a37] bg-[#0b1220] px-4 py-3">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('statsTitle') }}</p>
+                  <span class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ statistics.length }}</span>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="bg-[#0f172a] text-xs uppercase tracking-[0.3em] text-slate-400">
+                      <tr>
+                        <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('statTableHeaderKey') }}</th>
+                        <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('statTableHeaderLabel') }}</th>
+                        <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('statTableHeaderValue') }}</th>
+                        <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('statTableHeaderOrder') }}</th>
+                        <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('statTableHeaderActions') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="stat in statistics"
+                        :key="stat.id"
+                        class="border-t border-[#1f2a37] text-slate-200 hover:bg-[#0b1220]"
+                      >
+                        <td class="px-4 py-3">
+                          <input v-model="stat.key" class="w-32 border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="grid gap-2">
+                            <input v-model="stat.label_en" class="border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                            <input v-model="stat.label_ar" class="border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                          </div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="grid gap-2">
+                            <input v-model.number="stat.value" type="number" class="w-24 border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                            <input v-model="stat.suffix" class="w-20 border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                          </div>
+                        </td>
+                        <td class="px-4 py-3">
+                          <input v-model.number="stat.order" type="number" class="w-20 border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="flex items-center gap-3" :class="isRtl ? 'flex-row-reverse' : ''">
+                            <button class="text-xs uppercase tracking-[0.3em] text-[#d4af37]" @click="updateStatistic(stat)">
+                              {{ t('statUpdateButton') }}
+                            </button>
+                            <button class="text-xs uppercase tracking-[0.3em] text-rose-300" @click="deleteStatistic(stat)">
+                              {{ t('deleteButton') }}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr v-if="!statistics.length && !loading.statistics">
+                        <td colspan="5" class="px-4 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500">
+                          {{ t('statEmpty') }}
+                        </td>
+                      </tr>
+                      <tr v-if="loading.statistics">
+                        <td colspan="5" class="px-4 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500">
+                          {{ t('loading') }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="settings" class="border border-[#1f2a37] bg-[#0f172a]/70 p-6">
+            <div class="flex flex-col gap-2" :class="isRtl ? 'text-right' : ''">
+              <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('settingsTitle') }}</p>
+              <h3 class="text-2xl font-semibold text-white">{{ t('settingsTitle') }}</h3>
+              <p class="text-sm text-slate-400">{{ t('settingsSubtitle') }}</p>
+            </div>
+
+            <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
+              <div class="grid gap-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <input v-model="siteForm.site_name_en" :placeholder="t('settingsSiteNameEn')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+                  <input v-model="siteForm.site_name_ar" :placeholder="t('settingsSiteNameAr')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <input v-model="siteForm.hero_title_en" :placeholder="t('settingsHeroTitleEn')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+                  <input v-model="siteForm.hero_title_ar" :placeholder="t('settingsHeroTitleAr')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <textarea v-model="siteForm.hero_desc_en" rows="3" :placeholder="t('settingsHeroDescEn')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200"></textarea>
+                  <textarea v-model="siteForm.hero_desc_ar" rows="3" :placeholder="t('settingsHeroDescAr')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200"></textarea>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <input v-model="siteForm.address_en" :placeholder="t('settingsAddressEn')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+                  <input v-model="siteForm.address_ar" :placeholder="t('settingsAddressAr')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <input v-model="siteForm.contact_phone" :placeholder="t('settingsContactPhone')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+                  <input v-model="siteForm.contact_email" :placeholder="t('settingsContactEmail')" class="border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                  <button class="border border-[#d4af37] bg-[#d4af37] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900" @click="saveSiteSettings">
+                    {{ siteSetting ? t('settingsUpdate') : t('settingsCreate') }}
+                  </button>
+                  <button class="border border-[#1f2a37] bg-transparent px-4 py-2 text-xs uppercase tracking-[0.3em] text-slate-200" @click="refreshPublic">
+                    {{ t('consoleInstantUpdate') }}
+                  </button>
+                  <span v-if="siteSaving" class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('saving') }}</span>
+                </div>
+              </div>
+
+              <div class="grid gap-4">
+                <div class="border border-[#1f2a37] bg-[#0b1220] p-4">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('settingsLogo') }}</p>
+                  <input type="file" accept="image/*" class="mt-3 w-full border border-dashed border-[#d4af37]/60 bg-[#0f172a] px-3 py-2 text-xs uppercase tracking-[0.3em] text-slate-300" @change="handleSiteLogo" />
+                  <div class="mt-3 aspect-[4/3] w-full overflow-hidden border border-[#1f2a37] bg-[#0f172a]">
+                    <img v-if="siteLogoPreview" :src="siteLogoPreview" alt="logo" class="h-full w-full object-cover" />
+                    <div v-else class="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-500">
+                      {{ t('settingsLogo') }}
+                    </div>
+                  </div>
+                </div>
+                <div class="border border-[#1f2a37] bg-[#0b1220] p-4">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('settingsHeroImage') }}</p>
+                  <input type="file" accept="image/*" class="mt-3 w-full border border-dashed border-[#d4af37]/60 bg-[#0f172a] px-3 py-2 text-xs uppercase tracking-[0.3em] text-slate-300" @change="handleSiteHero" />
+                  <div class="mt-3 aspect-[4/3] w-full overflow-hidden border border-[#1f2a37] bg-[#0f172a]">
+                    <img v-if="siteHeroPreview" :src="siteHeroPreview" alt="hero" class="h-full w-full object-cover" />
+                    <div v-else class="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-500">
+                      {{ t('settingsHeroImage') }}
+                    </div>
                   </div>
                 </div>
               </div>
-              <p v-if="!stats.length" class="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                {{ t('statsSubtitle') }}
-              </p>
             </div>
-          </div>
-
-          <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
-            <div class="flex items-center justify-between">
-              <p class="text-xs uppercase tracking-[0.3em] text-[#bfa76a]">{{ t('trucksListTitle') }}</p>
-              <span class="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">{{ trucks.length }}</span>
-            </div>
-            <div class="mt-4 space-y-3">
-              <div
-                v-for="truck in trucks"
-                :key="truck.id"
-                class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-white/70 p-3 dark:border-white/10 dark:bg-slate-900/60"
-              >
-                <div :class="isRtl ? 'text-right' : ''">
-                  <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ truck.title }}</p>
-                  <p class="text-xs text-slate-500 dark:text-slate-400">{{ truck.description }}</p>
-                </div>
-                <button class="text-xs uppercase tracking-[0.3em] text-rose-500" @click="deleteTruck(truck.id)">
-                  {{ t('deleteButton') }}
-                </button>
-              </div>
-              <p v-if="!trucks.length" class="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                {{ t('trucksEmpty') }}
-              </p>
-            </div>
-          </div>
-
-          <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-2xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
-            <div class="flex items-center justify-between">
-              <p class="text-xs uppercase tracking-[0.3em] text-[#bfa76a]">{{ t('projectsListTitle') }}</p>
-              <span class="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">{{ projects.length }}</span>
-            </div>
-            <div class="mt-4 space-y-3">
-              <div
-                v-for="project in projects"
-                :key="project.id"
-                class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-white/70 p-3 dark:border-white/10 dark:bg-slate-900/60"
-              >
-                <div :class="isRtl ? 'text-right' : ''">
-                  <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ project.title }}</p>
-                  <p class="text-xs text-slate-500 dark:text-slate-400">{{ project.date }}</p>
-                </div>
-                <button class="text-xs uppercase tracking-[0.3em] text-rose-500" @click="deleteProject(project.id)">
-                  {{ t('deleteButton') }}
-                </button>
-              </div>
-              <p v-if="!projects.length" class="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                {{ t('projectsEmpty') }}
-              </p>
-            </div>
-          </div>
-        </div>
+          </section>
+        </main>
       </div>
 
-      <div
-        v-if="!isAuthenticated"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur-sm"
-      >
-        <div class="w-full max-w-md rounded-3xl border border-white/10 bg-white/90 p-6 shadow-2xl shadow-slate-900/30 backdrop-blur dark:bg-slate-900/80">
+      <div v-if="!isAuthenticated" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+        <div class="w-full max-w-md border border-[#1f2a37] bg-[#0f172a] p-6">
           <div class="flex flex-col gap-2" :class="isRtl ? 'text-right' : ''">
-            <p class="text-xs uppercase tracking-[0.4em] text-[#bfa76a]">{{ t('adminSecureNote') }}</p>
-            <h3 class="text-2xl font-semibold text-slate-900 dark:text-white">{{ t('loginTitle') }}</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-300">{{ t('loginSubtitle') }}</p>
+            <p class="text-xs uppercase tracking-[0.35em] text-slate-400">{{ t('adminSecureNote') }}</p>
+            <h3 class="text-2xl font-semibold text-white">{{ t('loginTitle') }}</h3>
+            <p class="text-sm text-slate-400">{{ t('loginSubtitle') }}</p>
           </div>
           <div class="mt-6 space-y-4">
-            <input
-              v-model="loginForm.username"
-              :placeholder="t('loginUsername')"
-              class="w-full rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none focus:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-100"
-            />
-            <input
-              v-model="loginForm.password"
-              type="password"
-              :placeholder="t('loginPassword')"
-              class="w-full rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none focus:border-[#d4af37] dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-100"
-            />
-            <button
-              class="w-full rounded-2xl bg-slate-900 px-4 py-3 text-xs uppercase tracking-[0.35em] text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900"
-              @click="login"
-            >
+            <input v-model="loginForm.username" :placeholder="t('loginUsername')" class="w-full border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+            <input v-model="loginForm.password" type="password" :placeholder="t('loginPassword')" class="w-full border border-[#1f2a37] bg-[#0b1220] px-4 py-3 text-sm text-slate-200" />
+            <button class="w-full border border-[#d4af37] bg-[#d4af37] px-4 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900" @click="login">
               {{ loginLoading ? t('loading') : t('loginButton') }}
             </button>
-            <p v-if="loginError" class="text-xs uppercase tracking-[0.3em] text-rose-500">
+            <p v-if="loginError" class="text-xs uppercase tracking-[0.3em] text-rose-300">
               {{ loginError }}
             </p>
           </div>

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import axios from 'axios'
 
 const props = defineProps({
@@ -19,44 +19,80 @@ const props = defineProps({
 
 const API_BASE = (import.meta.env.VITE_API_BASE || 'https://alkhat-api.onrender.com').replace(/\/$/, '')
 
-const stats = ref([
+const vehicles = ref([])
+const statistics = ref([])
+const siteSettings = ref(null)
+const refreshToken = ref('')
+
+const vehiclesLoading = ref(true)
+const statsLoading = ref(true)
+const settingsLoading = ref(true)
+
+const statsRef = ref(null)
+const displayValues = ref([])
+const hasAnimated = ref(false)
+let observer
+let refreshInterval
+
+const fallbackStats = [
   {
-    key: 'years',
     labelKey: 'statYears',
     captionKey: 'statYearsCaption',
     value: 16,
     suffix: '+',
   },
   {
-    key: 'projects',
     labelKey: 'statProjects',
     captionKey: 'statProjectsCaption',
     value: 240,
     suffix: '+',
   },
   {
-    key: 'fleet',
     labelKey: 'statFleet',
     captionKey: 'statFleetCaption',
     value: 38,
     suffix: '+',
   },
   {
-    key: 'safety',
     labelKey: 'statSafety',
     captionKey: 'statSafetyCaption',
     value: 98,
     suffix: '%',
   },
-])
+]
 
-const statsRef = ref(null)
-const displayValues = ref(stats.value.map(() => 0))
-const hasAnimated = ref(false)
-let observer
+const displayStats = computed(() => {
+  if (!statistics.value.length) {
+    return fallbackStats.map((stat) => ({
+      label: props.t(stat.labelKey),
+      caption: props.t(stat.captionKey),
+      value: stat.value,
+      suffix: stat.suffix,
+    }))
+  }
+  return statistics.value.map((stat) => ({
+    label: props.language === 'ar' ? stat.label_ar || stat.label_en : stat.label_en || stat.label_ar,
+    caption: props.language === 'ar' ? stat.caption_ar || stat.caption_en : stat.caption_en || stat.caption_ar,
+    value: stat.value,
+    suffix: stat.suffix,
+  }))
+})
+
+const setDisplayValues = () => {
+  displayValues.value = displayStats.value.map(() => 0)
+}
+
+watch(displayStats, () => {
+  setDisplayValues()
+  hasAnimated.value = false
+  if (statsRef.value && statsRef.value.getBoundingClientRect().top < window.innerHeight) {
+    hasAnimated.value = true
+    animateStats()
+  }
+})
 
 const animateStats = () => {
-  stats.value.forEach((stat, index) => {
+  displayStats.value.forEach((stat, index) => {
     const duration = 1400 + index * 180
     const start = performance.now()
 
@@ -77,68 +113,87 @@ const animateStats = () => {
 
 const formatStat = (index) => {
   const value = displayValues.value[index] ?? 0
-  const suffix = stats.value[index].suffix
+  const suffix = displayStats.value[index]?.suffix || ''
   return `${value}${suffix}`
 }
 
-const trucks = ref([])
-const trucksLoading = ref(true)
-const trucksError = ref(false)
-const statsLoading = ref(true)
-
-const resolveImage = (truck) => {
-  if (!truck) return ''
-  const rawUrl = truck.image_url || truck.image || ''
+const resolveImage = (item, key = 'image') => {
+  if (!item) return ''
+  const rawUrl = item[`${key}_url`] || item[key] || ''
   if (!rawUrl) return ''
   if (rawUrl.startsWith('http')) return rawUrl
   return `${API_BASE}${rawUrl}`
 }
 
-const heroImage = computed(() => resolveImage(trucks.value[0]))
+const heroImage = computed(() => {
+  if (siteSettings.value?.hero_image_url || siteSettings.value?.hero_image) {
+    return resolveImage(siteSettings.value, 'hero_image')
+  }
+  return resolveImage(vehicles.value[0])
+})
 
-const fetchTrucks = async () => {
-  trucksLoading.value = true
-  trucksError.value = false
+const getSetting = (field) => {
+  const locale = props.language === 'ar' ? 'ar' : 'en'
+  return siteSettings.value?.[`${field}_${locale}`] || ''
+}
+
+const heroBadge = computed(() => getSetting('site_name') || props.t('heroBadge'))
+const heroTitle = computed(() => getSetting('hero_title') || props.t('heroTitle'))
+const heroDesc = computed(() => getSetting('hero_desc') || props.t('heroDesc'))
+const contactPhone = computed(() => siteSettings.value?.contact_phone || '')
+const contactEmail = computed(() => siteSettings.value?.contact_email || '')
+
+const fetchVehicles = async () => {
+  vehiclesLoading.value = true
   try {
-    const { data } = await axios.get(`${API_BASE}/api/trucks/`)
-    trucks.value = Array.isArray(data) ? data : []
+    const { data } = await axios.get(`${API_BASE}/api/vehicles/`)
+    vehicles.value = Array.isArray(data) ? data : []
   } catch (error) {
-    trucksError.value = true
+    vehicles.value = []
   } finally {
-    trucksLoading.value = false
+    vehiclesLoading.value = false
   }
 }
 
-const fetchStats = async () => {
+const fetchStatistics = async () => {
   statsLoading.value = true
   try {
-    const { data } = await axios.get(`${API_BASE}/api/stats/`)
-    if (Array.isArray(data) && data.length) {
-      const statMap = new Map(data.map((item) => [item.key, item]))
-      stats.value = stats.value.map((stat) => {
-        const remote = statMap.get(stat.key)
-        if (!remote) return stat
-        return {
-          ...stat,
-          value: Number(remote.value) || stat.value,
-          suffix: remote.suffix || stat.suffix,
-        }
-      })
-      displayValues.value = stats.value.map(() => 0)
-      hasAnimated.value = false
-      if (statsRef.value && statsRef.value.getBoundingClientRect().top < window.innerHeight) {
-        hasAnimated.value = true
-        animateStats()
-      }
-    }
+    const { data } = await axios.get(`${API_BASE}/api/statistics/`)
+    statistics.value = Array.isArray(data) ? data : []
   } catch (error) {
-    // Keep fallback values
+    statistics.value = []
   } finally {
     statsLoading.value = false
   }
 }
 
+const fetchSiteSettings = async () => {
+  settingsLoading.value = true
+  try {
+    const { data } = await axios.get(`${API_BASE}/api/site-settings/`)
+    const setting = Array.isArray(data) ? data[0] : data
+    siteSettings.value = setting || null
+    return setting
+  } catch (error) {
+    siteSettings.value = null
+    return null
+  } finally {
+    settingsLoading.value = false
+  }
+}
+
+const syncPublicData = async (force = false) => {
+  const setting = await fetchSiteSettings()
+  const token = setting?.refresh_token || ''
+  if (force || (token && token !== refreshToken.value)) {
+    refreshToken.value = token
+    await Promise.all([fetchVehicles(), fetchStatistics()])
+  }
+}
+
 onMounted(() => {
+  setDisplayValues()
+
   observer = new IntersectionObserver(
     (entries) => {
       if (entries[0].isIntersecting && !hasAnimated.value) {
@@ -153,13 +208,16 @@ onMounted(() => {
     observer.observe(statsRef.value)
   }
 
-  fetchTrucks()
-  fetchStats()
+  syncPublicData(true)
+  refreshInterval = setInterval(() => syncPublicData(false), 5000)
 })
 
 onUnmounted(() => {
   if (observer) {
     observer.disconnect()
+  }
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
   }
 })
 </script>
@@ -174,13 +232,13 @@ onUnmounted(() => {
       <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div class="space-y-6" :class="isRtl ? 'text-right' : ''">
           <div class="inline-flex items-center gap-3 rounded-full border border-[#d4af37]/40 bg-[#f3e2a2]/30 px-4 py-2 text-xs uppercase tracking-[0.35em] text-[#8c774a]">
-            {{ t('heroBadge') }}
+            {{ heroBadge }}
           </div>
           <h1 class="text-4xl font-semibold leading-tight text-slate-900 dark:text-white lg:text-5xl">
-            {{ t('heroTitle') }}
+            {{ heroTitle }}
           </h1>
           <p class="text-base text-slate-600 dark:text-slate-300">
-            {{ t('heroDesc') }}
+            {{ heroDesc }}
           </p>
           <div class="flex flex-wrap items-center gap-3" :class="isRtl ? 'justify-end' : ''">
             <button class="rounded-full bg-slate-900 px-5 py-2 text-xs uppercase tracking-[0.35em] text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900">
@@ -234,39 +292,33 @@ onUnmounted(() => {
                     <p class="mt-2 text-sm text-slate-200">{{ t('fleetGallerySubtitle') }}</p>
                   </div>
                   <span class="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-300">
-                    {{ trucks.length }}
+                    {{ vehicles.length }}
                   </span>
                 </div>
 
                 <div class="mt-4 flex gap-3 overflow-x-auto pb-2">
                   <div
-                    v-if="trucksLoading"
+                    v-if="vehiclesLoading"
                     class="min-w-[200px] rounded-2xl border border-white/10 bg-white/5 p-4 text-xs uppercase tracking-[0.3em] text-slate-300"
                   >
                     {{ t('trucksLoading') }}
                   </div>
                   <div
-                    v-else-if="trucksError"
-                    class="min-w-[200px] rounded-2xl border border-white/10 bg-white/5 p-4 text-xs uppercase tracking-[0.3em] text-amber-200"
-                  >
-                    {{ t('trucksError') }}
-                  </div>
-                  <div
-                    v-else-if="!trucks.length"
+                    v-else-if="!vehicles.length"
                     class="min-w-[200px] rounded-2xl border border-white/10 bg-white/5 p-4 text-xs uppercase tracking-[0.3em] text-slate-300"
                   >
                     {{ t('trucksEmpty') }}
                   </div>
                   <div
-                    v-for="truck in trucks"
-                    :key="truck.id"
+                    v-for="vehicle in vehicles"
+                    :key="vehicle.id"
                     class="min-w-[220px] overflow-hidden rounded-2xl border border-white/10 bg-white/5"
                   >
                     <div class="aspect-[4/3] w-full overflow-hidden">
                       <img
-                        v-if="resolveImage(truck)"
-                        :src="resolveImage(truck)"
-                        :alt="truck.title"
+                        v-if="resolveImage(vehicle)"
+                        :src="resolveImage(vehicle)"
+                        :alt="vehicle.title"
                         class="h-full w-full object-cover"
                       />
                       <div v-else class="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-300">
@@ -274,8 +326,8 @@ onUnmounted(() => {
                       </div>
                     </div>
                     <div class="p-3" :class="isRtl ? 'text-right' : ''">
-                      <p class="text-xs uppercase tracking-[0.25em] text-slate-200">{{ truck.title }}</p>
-                      <p class="mt-2 text-xs text-slate-300">{{ truck.description }}</p>
+                      <p class="text-xs uppercase tracking-[0.25em] text-slate-200">{{ vehicle.title }}</p>
+                      <p class="mt-2 text-xs text-slate-300">{{ vehicle.description }}</p>
                     </div>
                   </div>
                 </div>
@@ -309,15 +361,15 @@ onUnmounted(() => {
 
       <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <div
-          v-for="(stat, index) in stats"
-          :key="stat.labelKey"
+          v-for="(stat, index) in displayStats"
+          :key="`${stat.label}-${index}`"
           class="rounded-3xl border border-slate-200/70 bg-white/90 p-5 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70"
         >
           <p class="text-3xl font-semibold text-slate-900 dark:text-white">
             {{ formatStat(index) }}
           </p>
-          <p class="mt-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">{{ t(stat.labelKey) }}</p>
-          <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">{{ t(stat.captionKey) }}</p>
+          <p class="mt-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">{{ stat.label }}</p>
+          <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">{{ stat.caption }}</p>
         </div>
       </div>
     </div>
@@ -417,6 +469,10 @@ onUnmounted(() => {
             <p class="text-xs uppercase tracking-[0.35em] text-[#bfa76a]">{{ t('contactOverline') }}</p>
             <h3 class="mt-2 text-3xl font-semibold text-slate-900 dark:text-white">{{ t('contactTitle') }}</h3>
             <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">{{ t('contactDesc') }}</p>
+            <div v-if="contactPhone || contactEmail" class="mt-4 space-y-1 text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">
+              <p v-if="contactPhone">{{ contactPhone }}</p>
+              <p v-if="contactEmail">{{ contactEmail }}</p>
+            </div>
           </div>
           <button class="rounded-full bg-slate-900 px-6 py-3 text-xs uppercase tracking-[0.35em] text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900">
             {{ t('contactCta') }}

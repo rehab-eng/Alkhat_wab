@@ -1,11 +1,14 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from './components/Navbar.vue'
 import { messages } from './i18n'
 
 const isDark = ref(false)
 const language = ref('en')
 const isRtl = computed(() => language.value === 'ar')
+const route = useRoute()
+const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
 
 const t = (key) => messages[language.value]?.[key] ?? key
 
@@ -58,9 +61,14 @@ const setLanguage = (value) => {
 <template>
   <div
     :dir="isRtl ? 'rtl' : 'ltr'"
-    class="min-h-screen bg-[#f7f2e8] text-slate-900 transition-colors duration-300 dark:bg-[#0b121c] dark:text-slate-100"
+    :class="
+      isDashboardRoute
+        ? 'min-h-screen bg-[#0b0f14] text-slate-100'
+        : 'min-h-screen bg-[#f7f2e8] text-slate-900 transition-colors duration-300 dark:bg-[#0b121c] dark:text-slate-100'
+    "
   >
     <Navbar
+      v-if="!isDashboardRoute"
       :is-dark="isDark"
       :language="language"
       :is-rtl="isRtl"
@@ -75,7 +83,10 @@ const setLanguage = (value) => {
       </router-view>
     </main>
 
-    <footer class="border-t border-slate-200/60 bg-white/70 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-400">
+    <footer
+      v-if="!isDashboardRoute"
+      class="border-t border-slate-200/60 bg-white/70 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-400"
+    >
       {{ t('footerText') }}
     </footer>
   </div>
