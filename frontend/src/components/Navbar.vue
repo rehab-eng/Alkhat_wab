@@ -69,7 +69,11 @@ const setLanguage = (value) => {
           <button
             type="button"
             class="rounded-full px-3 py-1 transition"
-            :class="language === 'en' ? 'bg-[#d4af37] text-slate-900' : 'hover:text-slate-900 dark:hover:text-white'"
+            :class="
+              language === 'en'
+                ? 'bg-[#d4af37] text-slate-900 dark:bg-slate-700 dark:text-white'
+                : 'hover:text-slate-900 dark:hover:text-white'
+            "
             @click="setLanguage('en')"
           >
             EN
@@ -77,7 +81,11 @@ const setLanguage = (value) => {
           <button
             type="button"
             class="rounded-full px-3 py-1 transition"
-            :class="language === 'ar' ? 'bg-[#d4af37] text-slate-900' : 'hover:text-slate-900 dark:hover:text-white'"
+            :class="
+              language === 'ar'
+                ? 'bg-[#d4af37] text-slate-900 dark:bg-slate-700 dark:text-white'
+                : 'hover:text-slate-900 dark:hover:text-white'
+            "
             @click="setLanguage('ar')"
           >
             AR
@@ -86,7 +94,7 @@ const setLanguage = (value) => {
 
         <button
           type="button"
-          class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/70 bg-white/70 text-slate-700 shadow-sm transition hover:border-[#d4af37] hover:text-slate-900 dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200"
+          class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/70 bg-white/70 text-slate-700 shadow-sm transition hover:border-[#d4af37] hover:text-slate-900 dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200 dark:hover:border-slate-400"
           @click="emit('toggle-theme')"
         >
           <span class="sr-only">{{ t('toggleTheme') }}</span>
@@ -101,7 +109,7 @@ const setLanguage = (value) => {
 
         <button
           type="button"
-          class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/70 bg-white/70 text-slate-700 shadow-sm transition hover:border-[#d4af37] hover:text-slate-900 dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200 md:hidden"
+          class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/70 bg-white/70 text-slate-700 shadow-sm transition hover:border-[#d4af37] hover:text-slate-900 dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200 dark:hover:border-slate-400 md:hidden"
           @click="mobileOpen = !mobileOpen"
         >
           <span class="sr-only">{{ t('toggleMenu') }}</span>
@@ -125,7 +133,7 @@ const setLanguage = (value) => {
             <button
               type="button"
               class="rounded-full px-2 py-1"
-              :class="language === 'en' ? 'bg-[#d4af37] text-slate-900' : ''"
+              :class="language === 'en' ? 'bg-[#d4af37] text-slate-900 dark:bg-slate-700 dark:text-white' : ''"
               @click="setLanguage('en')"
             >
               EN
@@ -133,7 +141,7 @@ const setLanguage = (value) => {
             <button
               type="button"
               class="rounded-full px-2 py-1"
-              :class="language === 'ar' ? 'bg-[#d4af37] text-slate-900' : ''"
+              :class="language === 'ar' ? 'bg-[#d4af37] text-slate-900 dark:bg-slate-700 dark:text-white' : ''"
               @click="setLanguage('ar')"
             >
               AR
@@ -145,7 +153,7 @@ const setLanguage = (value) => {
           v-for="link in links"
           :key="link.label"
           :href="link.href"
-          class="rounded-xl border border-slate-200/60 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-700 transition hover:border-[#d4af37] hover:text-slate-900 dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200"
+          class="rounded-xl border border-slate-200/60 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-700 transition hover:border-[#d4af37] hover:text-slate-900 dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200 dark:hover:border-slate-400"
           @click="mobileOpen = false"
         >
           {{ link.label }}

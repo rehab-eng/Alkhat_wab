@@ -18,6 +18,8 @@ const props = defineProps({
 })
 
 const API_BASE = (import.meta.env.VITE_API_BASE || 'https://alkhat-api.onrender.com').replace(/\/$/, '')
+const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://alkhat-wab.pages.dev'
+const heroFallback = '/ssss.webp'
 
 const vehicles = ref([])
 const statistics = ref([])
@@ -91,6 +93,15 @@ watch(displayStats, () => {
   }
 })
 
+watch(
+  () => props.language,
+  () => {
+    if (siteSettings.value) {
+      updateStructuredData()
+    }
+  }
+)
+
 const animateStats = () => {
   displayStats.value.forEach((stat, index) => {
     const duration = 1400 + index * 180
@@ -129,7 +140,8 @@ const heroImage = computed(() => {
   if (siteSettings.value?.hero_image_url || siteSettings.value?.hero_image) {
     return resolveImage(siteSettings.value, 'hero_image')
   }
-  return resolveImage(vehicles.value[0])
+  const vehicleImage = resolveImage(vehicles.value[0])
+  return vehicleImage || heroFallback
 })
 
 const getSetting = (field) => {
@@ -167,12 +179,94 @@ const fetchStatistics = async () => {
   }
 }
 
+const updateStructuredData = () => {
+  const name = siteSettings.value?.site_name_ar || siteSettings.value?.site_name_en || 'KHUTUT ALRIMAL'
+  const phone = siteSettings.value?.contact_phone || ''
+  const email = siteSettings.value?.contact_email || ''
+  const addressText =
+    (props.language === 'ar' ? siteSettings.value?.address_ar : siteSettings.value?.address_en) ||
+    'Tripoli, Libya'
+  const logoUrl = siteSettings.value?.logo ? resolveImage(siteSettings.value, 'logo') : `${SITE_URL}/vite.svg`
+
+  const clean = (obj) => {
+    Object.keys(obj).forEach((key) => {
+      const value = obj[key]
+      if (value === '' || value === null || value === undefined) {
+        delete obj[key]
+      } else if (typeof value === 'object' && !Array.isArray(value)) {
+        clean(value)
+        if (!Object.keys(value).length) {
+          delete obj[key]
+        }
+      }
+    })
+    return obj
+  }
+
+  const services = [
+    'نقل رمال',
+    'توريد ركام',
+    'نقل مواد بناء',
+    'نقل ثقيل',
+    'ردم أساسات',
+    'حفر وردم',
+    'تأجير شاحنات 6x4',
+    'توريد زفت واسفلت',
+    'صيانة الطرق',
+  ]
+
+  const organization = clean({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name,
+    url: SITE_URL,
+    logo: logoUrl,
+    telephone: phone,
+    email,
+    areaServed: 'Libya',
+    knowsAbout: services,
+  })
+
+  const localBusiness = clean({
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name,
+    url: SITE_URL,
+    image: logoUrl,
+    telephone: phone,
+    email,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Tripoli',
+      addressCountry: 'LY',
+      streetAddress: addressText,
+    },
+    areaServed: 'Tripoli, Libya',
+    serviceType: services,
+  })
+
+  const upsert = (id, data) => {
+    let script = document.getElementById(id)
+    if (!script) {
+      script = document.createElement('script')
+      script.type = 'application/ld+json'
+      script.id = id
+      document.head.appendChild(script)
+    }
+    script.textContent = JSON.stringify(data)
+  }
+
+  upsert('org-schema', organization)
+  upsert('local-schema', localBusiness)
+}
+
 const fetchSiteSettings = async () => {
   settingsLoading.value = true
   try {
     const { data } = await axios.get(`${API_BASE}/api/site-settings/`)
     const setting = Array.isArray(data) ? data[0] : data
     siteSettings.value = setting || null
+    updateStructuredData()
     return setting
   } catch (error) {
     siteSettings.value = null
@@ -225,18 +319,27 @@ onUnmounted(() => {
 <template>
   <section id="home" class="relative overflow-hidden">
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.18),_transparent_60%)]"></div>
-    <div class="absolute -right-32 top-12 h-72 w-72 rounded-full bg-[#d4af37]/20 blur-3xl"></div>
+    <div class="absolute -right-32 top-12 h-72 w-72 rounded-full bg-[#d4af37]/20 blur-3xl dark:opacity-0"></div>
     <div class="absolute -left-20 bottom-10 h-60 w-60 rounded-full bg-[#0b121c]/20 blur-3xl dark:bg-[#f3e2a2]/10"></div>
 
     <div class="relative mx-auto w-full max-w-7xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-24">
       <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div class="space-y-6" :class="isRtl ? 'text-right' : ''">
-          <div class="inline-flex items-center gap-3 rounded-full border border-[#d4af37]/40 bg-[#f3e2a2]/30 px-4 py-2 text-xs uppercase tracking-[0.35em] text-[#7a5a1f]">
+          <div class="inline-flex items-center gap-3 rounded-full border border-[#d4af37]/40 bg-[#f3e2a2]/30 px-4 py-2 text-xs uppercase tracking-[0.35em] text-[#7a5a1f] dark:border-transparent dark:bg-slate-900/60 dark:text-slate-200">
             {{ heroBadge }}
           </div>
-          <h1 class="text-4xl font-semibold leading-tight text-slate-900 dark:text-white lg:text-5xl">
+          <h1
+            class="hero-slide text-3xl font-semibold leading-tight text-slate-900 dark:text-white sm:text-4xl lg:text-5xl"
+            :class="isRtl ? 'hero-slide-rtl' : 'hero-slide-ltr'"
+          >
             {{ heroTitle }}
           </h1>
+          <h2
+            class="hero-slide text-lg font-semibold text-slate-700 dark:text-slate-300 sm:text-xl"
+            :class="isRtl ? 'hero-slide-rtl' : 'hero-slide-ltr'"
+          >
+            {{ t('heroSeoSubheading') }}
+          </h2>
           <p class="text-base text-slate-600 dark:text-slate-300">
             {{ heroDesc }}
           </p>
@@ -244,21 +347,21 @@ onUnmounted(() => {
             <button class="rounded-full bg-slate-900 px-5 py-2 text-xs uppercase tracking-[0.35em] text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900">
               {{ t('ctaProposal') }}
             </button>
-            <button class="rounded-full border border-slate-300/70 px-5 py-2 text-xs uppercase tracking-[0.35em] text-slate-700 transition hover:border-[#d4af37] dark:border-white/20 dark:text-slate-200">
+            <button class="rounded-full border border-slate-300/70 px-5 py-2 text-xs uppercase tracking-[0.35em] text-slate-700 transition hover:border-[#d4af37] dark:border-white/20 dark:text-slate-200 dark:hover:border-slate-400">
               {{ t('ctaPortfolio') }}
             </button>
           </div>
           <div class="flex flex-wrap gap-6 text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400" :class="isRtl ? 'justify-end' : ''">
             <div class="flex items-center gap-2" :class="isRtl ? 'flex-row-reverse' : ''">
-              <span class="h-2 w-2 rounded-full bg-[#d4af37]"></span>
+              <span class="h-2 w-2 rounded-full bg-[#d4af37] dark:bg-slate-500"></span>
               {{ t('highlightIso') }}
             </div>
             <div class="flex items-center gap-2" :class="isRtl ? 'flex-row-reverse' : ''">
-              <span class="h-2 w-2 rounded-full bg-[#d4af37]"></span>
+              <span class="h-2 w-2 rounded-full bg-[#d4af37] dark:bg-slate-500"></span>
               {{ t('highlightOps') }}
             </div>
             <div class="flex items-center gap-2" :class="isRtl ? 'flex-row-reverse' : ''">
-              <span class="h-2 w-2 rounded-full bg-[#d4af37]"></span>
+              <span class="h-2 w-2 rounded-full bg-[#d4af37] dark:bg-slate-500"></span>
               {{ t('highlightCoverage') }}
             </div>
           </div>
@@ -272,7 +375,7 @@ onUnmounted(() => {
                 <img
                   v-if="heroImage"
                   :src="heroImage"
-                  :alt="t('heroCardTitle')"
+                  :alt="language === 'ar' ? 'شاحنة نقل ثقيل' : t('heroCardTitle')"
                   width="800"
                   height="600"
                   loading="eager"
@@ -327,7 +430,7 @@ onUnmounted(() => {
                       <img
                         v-if="resolveImage(vehicle)"
                         :src="resolveImage(vehicle)"
-                        :alt="vehicle.title"
+                        :alt="language === 'ar' ? `شاحنة نقل ثقيل - ${vehicle.title}` : vehicle.title"
                         width="800"
                         height="600"
                         loading="lazy"
@@ -346,7 +449,7 @@ onUnmounted(() => {
               </div>
             </div>
           </div>
-          <div class="absolute -bottom-6 -left-6 hidden h-24 w-24 rounded-2xl border border-[#d4af37]/50 bg-[#f3e2a2]/30 sm:block"></div>
+          <div class="absolute -bottom-6 -left-6 hidden h-24 w-24 rounded-2xl border border-[#d4af37]/50 bg-[#f3e2a2]/30 sm:block dark:opacity-0"></div>
           <div class="absolute -right-6 -top-6 hidden h-20 w-20 rounded-full border border-white/20 bg-white/10 sm:block"></div>
         </div>
       </div>
@@ -366,8 +469,8 @@ onUnmounted(() => {
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.08),_transparent_60%)] dark:bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.1),_transparent_60%)]"></div>
     <div class="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col gap-3" :class="isRtl ? 'text-right' : ''">
-        <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f]">{{ t('statsOverline') }}</p>
-        <h2 class="text-3xl font-semibold text-slate-900 dark:text-white">{{ t('statsTitle') }}</h2>
+        <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f] dark:text-slate-300">{{ t('statsOverline') }}</p>
+        <h2 class="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{{ t('statsTitle') }}</h2>
         <p class="text-sm text-slate-500 dark:text-slate-300">{{ t('statsSubtitle') }}</p>
       </div>
 
@@ -391,8 +494,8 @@ onUnmounted(() => {
     <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
-          <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f]">{{ t('featuredOverline') }}</p>
-          <h3 class="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{{ t('featuredTitle') }}</h3>
+          <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f] dark:text-slate-300">{{ t('featuredOverline') }}</p>
+          <h3 class="mt-3 text-xl font-semibold text-slate-900 dark:text-white sm:text-2xl">{{ t('featuredTitle') }}</h3>
           <p class="mt-3 text-sm text-slate-500 dark:text-slate-300">
             {{ t('featuredDesc') }}
           </p>
@@ -418,7 +521,7 @@ onUnmounted(() => {
 
         <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-br from-[#0b121c] via-[#182233] to-[#0b121c] p-6 text-white shadow-xl shadow-slate-900/25">
           <p class="text-xs uppercase tracking-[0.35em] text-[#f3e2a2]">{{ t('liveFleetOverline') }}</p>
-          <h3 class="mt-3 text-2xl font-semibold">{{ t('liveFleetTitle') }}</h3>
+          <h3 class="mt-3 text-xl font-semibold sm:text-2xl">{{ t('liveFleetTitle') }}</h3>
           <p class="mt-2 text-sm text-slate-200">{{ t('liveFleetDesc') }}</p>
           <div class="mt-6 space-y-3">
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4" :class="isRtl ? 'text-right' : ''">
@@ -444,8 +547,8 @@ onUnmounted(() => {
       <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-8 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
         <div class="grid gap-8 lg:grid-cols-2">
           <div :class="isRtl ? 'text-right' : ''">
-            <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f]">{{ t('aboutOverline') }}</p>
-            <h3 class="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{{ t('aboutTitle') }}</h3>
+            <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f] dark:text-slate-300">{{ t('aboutOverline') }}</p>
+            <h3 class="mt-3 text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{{ t('aboutTitle') }}</h3>
             <p class="mt-3 text-sm text-slate-500 dark:text-slate-300">
               {{ t('aboutDesc') }}
             </p>
@@ -478,8 +581,8 @@ onUnmounted(() => {
       <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-r from-[#f3e2a2]/40 to-white/90 p-8 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:from-[#1b2333] dark:to-[#0b121c]">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between" :class="isRtl ? 'lg:flex-row-reverse' : ''">
           <div :class="isRtl ? 'text-right' : ''">
-            <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f]">{{ t('contactOverline') }}</p>
-            <h3 class="mt-2 text-3xl font-semibold text-slate-900 dark:text-white">{{ t('contactTitle') }}</h3>
+            <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f] dark:text-slate-300">{{ t('contactOverline') }}</p>
+            <h3 class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{{ t('contactTitle') }}</h3>
             <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">{{ t('contactDesc') }}</p>
             <div v-if="contactPhone || contactEmail" class="mt-4 space-y-1 text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">
               <p v-if="contactPhone">{{ contactPhone }}</p>
@@ -506,6 +609,40 @@ onUnmounted(() => {
   text-transform: uppercase;
   letter-spacing: 0.4em;
   color: #7a5a1f;
+}
+
+.hero-slide {
+  will-change: transform, opacity;
+}
+
+.hero-slide-ltr {
+  animation: heroSlideLtr 0.8s ease-out both;
+}
+
+.hero-slide-rtl {
+  animation: heroSlideRtl 0.8s ease-out both;
+}
+
+@keyframes heroSlideLtr {
+  0% {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes heroSlideRtl {
+  0% {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .marquee-item {

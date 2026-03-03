@@ -128,7 +128,8 @@
     statsSave: 'Save Changes',
     statsSaved: 'Stats updated',
     heroBadge: 'KHUTUT ALRIMAL FOR GENERAL CONTRACTING',
-    heroTitle: 'Precision Heavy Transport & General Contracting Excellence',
+    heroTitle: 'Heavy Transport & General Contracting in Tripoli, Libya',
+    heroSeoSubheading: 'Sand transport, aggregate supply, and heavy equipment logistics across Tripoli & Libya.',
     heroDesc:
       'KHUTUT ALRIMAL delivers mission-critical logistics, heavy haulage, and infrastructure execution with uncompromising safety standards and world-class project governance.',
     ctaProposal: 'Request Proposal',
@@ -370,7 +371,8 @@
     statsSave: 'حفظ التغييرات',
     statsSaved: 'تم تحديث الإحصاءات',
     heroBadge: 'شركة خطوط الرمال للمقاولات العامة',
-    heroTitle: 'تميز احترافي في النقل الثقيل والمقاولات العامة',
+    heroTitle: 'النقل الثقيل والمقاولات العامة في طرابلس ليبيا',
+    heroSeoSubheading: 'نقل رمال وتوريد ركام وخدمات نقل ثقيل في طرابلس وليبيا.',
     heroDesc:
       'تقدم خطوط الرمال خدمات لوجستية ونقل ثقيل وتنفيذ بنى تحتية بمعايير سلامة عالية وحوكمة عالمية المستوى.',
     ctaProposal: 'طلب عرض سعر',
