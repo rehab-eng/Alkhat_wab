@@ -32,7 +32,6 @@ const links = computed(() => {
     { label: props.t('navProjects'), href: '/#projects' },
     { label: props.t('navAbout'), href: '/#about' },
     { label: props.t('navContact'), href: '/#contact' },
-    { label: props.t('navDashboard'), href: '/dashboard' },
   ]
 })
 
