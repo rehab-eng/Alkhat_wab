@@ -93,8 +93,6 @@ const setLanguage = (value) => {
 </template>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Marcellus&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
 
 :root {
   color-scheme: light dark;

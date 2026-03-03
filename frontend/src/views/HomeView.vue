@@ -231,7 +231,7 @@ onUnmounted(() => {
     <div class="relative mx-auto w-full max-w-7xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-24">
       <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div class="space-y-6" :class="isRtl ? 'text-right' : ''">
-          <div class="inline-flex items-center gap-3 rounded-full border border-[#d4af37]/40 bg-[#f3e2a2]/30 px-4 py-2 text-xs uppercase tracking-[0.35em] text-[#8c774a]">
+          <div class="inline-flex items-center gap-3 rounded-full border border-[#d4af37]/40 bg-[#f3e2a2]/30 px-4 py-2 text-xs uppercase tracking-[0.35em] text-[#7a5a1f]">
             {{ heroBadge }}
           </div>
           <h1 class="text-4xl font-semibold leading-tight text-slate-900 dark:text-white lg:text-5xl">
@@ -269,7 +269,16 @@ onUnmounted(() => {
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.25),_transparent_60%)]"></div>
             <div class="relative z-10 flex flex-col gap-4">
               <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-white/10 bg-[linear-gradient(120deg,_rgba(243,226,162,0.22),_rgba(15,23,42,0.85))]">
-                <img v-if="heroImage" :src="heroImage" :alt="t('heroCardTitle')" class="h-full w-full object-cover" />
+                <img
+                  v-if="heroImage"
+                  :src="heroImage"
+                  :alt="t('heroCardTitle')"
+                  width="800"
+                  height="600"
+                  loading="eager"
+                  fetchpriority="high"
+                  class="h-full w-full object-cover"
+                />
                 <div v-else class="flex h-full w-full items-center justify-center text-center text-sm uppercase tracking-[0.4em] text-[#f3e2a2]">
                   {{ t('heroCardTitle') }}
                 </div>
@@ -319,6 +328,9 @@ onUnmounted(() => {
                         v-if="resolveImage(vehicle)"
                         :src="resolveImage(vehicle)"
                         :alt="vehicle.title"
+                        width="800"
+                        height="600"
+                        loading="lazy"
                         class="h-full w-full object-cover"
                       />
                       <div v-else class="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-300">
@@ -354,7 +366,7 @@ onUnmounted(() => {
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.08),_transparent_60%)] dark:bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.1),_transparent_60%)]"></div>
     <div class="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col gap-3" :class="isRtl ? 'text-right' : ''">
-        <p class="text-xs uppercase tracking-[0.35em] text-[#bfa76a]">{{ t('statsOverline') }}</p>
+        <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f]">{{ t('statsOverline') }}</p>
         <h2 class="text-3xl font-semibold text-slate-900 dark:text-white">{{ t('statsTitle') }}</h2>
         <p class="text-sm text-slate-500 dark:text-slate-300">{{ t('statsSubtitle') }}</p>
       </div>
@@ -379,7 +391,7 @@ onUnmounted(() => {
     <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
-          <p class="text-xs uppercase tracking-[0.35em] text-[#bfa76a]">{{ t('featuredOverline') }}</p>
+          <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f]">{{ t('featuredOverline') }}</p>
           <h3 class="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{{ t('featuredTitle') }}</h3>
           <p class="mt-3 text-sm text-slate-500 dark:text-slate-300">
             {{ t('featuredDesc') }}
@@ -432,7 +444,7 @@ onUnmounted(() => {
       <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-8 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
         <div class="grid gap-8 lg:grid-cols-2">
           <div :class="isRtl ? 'text-right' : ''">
-            <p class="text-xs uppercase tracking-[0.35em] text-[#bfa76a]">{{ t('aboutOverline') }}</p>
+            <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f]">{{ t('aboutOverline') }}</p>
             <h3 class="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{{ t('aboutTitle') }}</h3>
             <p class="mt-3 text-sm text-slate-500 dark:text-slate-300">
               {{ t('aboutDesc') }}
@@ -466,7 +478,7 @@ onUnmounted(() => {
       <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-r from-[#f3e2a2]/40 to-white/90 p-8 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:from-[#1b2333] dark:to-[#0b121c]">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between" :class="isRtl ? 'lg:flex-row-reverse' : ''">
           <div :class="isRtl ? 'text-right' : ''">
-            <p class="text-xs uppercase tracking-[0.35em] text-[#bfa76a]">{{ t('contactOverline') }}</p>
+            <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f]">{{ t('contactOverline') }}</p>
             <h3 class="mt-2 text-3xl font-semibold text-slate-900 dark:text-white">{{ t('contactTitle') }}</h3>
             <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">{{ t('contactDesc') }}</p>
             <div v-if="contactPhone || contactEmail" class="mt-4 space-y-1 text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">
@@ -493,7 +505,7 @@ onUnmounted(() => {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.4em;
-  color: #8c774a;
+  color: #7a5a1f;
 }
 
 .marquee-item {
