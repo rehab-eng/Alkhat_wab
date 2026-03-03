@@ -40,25 +40,25 @@ const fallbackStats = [
   {
     labelKey: 'statYears',
     captionKey: 'statYearsCaption',
-    value: 16,
+    value: 560,
     suffix: '+',
   },
   {
     labelKey: 'statProjects',
     captionKey: 'statProjectsCaption',
-    value: 240,
+    value: 20,
     suffix: '+',
   },
   {
     labelKey: 'statFleet',
     captionKey: 'statFleetCaption',
-    value: 38,
-    suffix: '+',
+    value: 24,
+    suffix: '/7',
   },
   {
     labelKey: 'statSafety',
     captionKey: 'statSafetyCaption',
-    value: 98,
+    value: 50000,
     suffix: '%',
   },
 ]
@@ -125,7 +125,10 @@ const animateStats = () => {
 const formatStat = (index) => {
   const value = displayValues.value[index] ?? 0
   const suffix = displayStats.value[index]?.suffix || ''
-  return `${value}${suffix}`
+  const formatted = Number.isFinite(value)
+    ? new Intl.NumberFormat(props.language === 'ar' ? 'ar-LY' : 'en-US').format(value)
+    : value
+  return `${formatted}${suffix}`
 }
 
 const resolveImage = (item, key = 'image') => {
@@ -154,6 +157,7 @@ const heroTitle = computed(() => getSetting('hero_title') || props.t('heroTitle'
 const heroDesc = computed(() => getSetting('hero_desc') || props.t('heroDesc'))
 const contactPhone = computed(() => siteSettings.value?.contact_phone || '')
 const contactEmail = computed(() => siteSettings.value?.contact_email || '')
+const contactNumbers = ['091-5320462', '092-5256275']
 
 const fetchVehicles = async () => {
   vehiclesLoading.value = true
@@ -321,6 +325,7 @@ onUnmounted(() => {
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.18),_transparent_60%)]"></div>
     <div class="absolute -right-32 top-12 h-72 w-72 rounded-full bg-[#d4af37]/20 blur-3xl dark:opacity-0"></div>
     <div class="absolute -left-20 bottom-10 h-60 w-60 rounded-full bg-[#0b121c]/20 blur-3xl dark:bg-[#f3e2a2]/10"></div>
+    <div class="stardust-layer"></div>
 
     <div class="relative mx-auto w-full max-w-7xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-24">
       <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
@@ -401,7 +406,7 @@ onUnmounted(() => {
                 <div class="flex items-start justify-between gap-4" :class="isRtl ? 'flex-row-reverse' : ''">
                   <div>
                     <p class="text-xs uppercase tracking-[0.3em] text-slate-300">{{ t('fleetGalleryTitle') }}</p>
-                    <p class="mt-2 text-sm text-slate-200">{{ t('fleetGallerySubtitle') }}</p>
+                    <p v-if="t('fleetGallerySubtitle').trim()" class="mt-2 text-sm text-slate-200">{{ t('fleetGallerySubtitle') }}</p>
                   </div>
                   <span class="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-300">
                     {{ vehicles.length }}
@@ -416,7 +421,7 @@ onUnmounted(() => {
                     {{ t('trucksLoading') }}
                   </div>
                   <div
-                    v-else-if="!vehicles.length"
+                    v-else-if="!vehicles.length && t('trucksEmpty')"
                     class="min-w-[200px] rounded-2xl border border-white/10 bg-white/5 p-4 text-xs uppercase tracking-[0.3em] text-slate-300"
                   >
                     {{ t('trucksEmpty') }}
@@ -484,7 +489,7 @@ onUnmounted(() => {
             {{ formatStat(index) }}
           </p>
           <p class="mt-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">{{ stat.label }}</p>
-          <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">{{ stat.caption }}</p>
+          <p v-if="stat.caption" class="mt-3 text-xs text-slate-500 dark:text-slate-400">{{ stat.caption }}</p>
         </div>
       </div>
     </div>
@@ -584,14 +589,23 @@ onUnmounted(() => {
             <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f] dark:text-slate-300">{{ t('contactOverline') }}</p>
             <h3 class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{{ t('contactTitle') }}</h3>
             <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">{{ t('contactDesc') }}</p>
-            <div v-if="contactPhone || contactEmail" class="mt-4 space-y-1 text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">
+            <div
+              v-if="contactPhone || contactEmail || contactNumbers.length"
+              class="mt-4 space-y-1 text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300"
+            >
               <p v-if="contactPhone">{{ contactPhone }}</p>
               <p v-if="contactEmail">{{ contactEmail }}</p>
+              <p v-for="number in contactNumbers" :key="number">{{ number }}</p>
             </div>
           </div>
-          <button class="rounded-full bg-slate-900 px-6 py-3 text-xs uppercase tracking-[0.35em] text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900">
+          <a
+            href="https://wa.me/218915320462"
+            target="_blank"
+            rel="noopener"
+            class="rounded-full bg-slate-900 px-6 py-3 text-xs uppercase tracking-[0.35em] text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+          >
             {{ t('contactCta') }}
-          </button>
+          </a>
         </div>
       </div>
     </div>
@@ -623,6 +637,25 @@ onUnmounted(() => {
   animation: heroSlideRtl 0.8s ease-out both;
 }
 
+.stardust-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: screen;
+  background-image:
+    radial-gradient(circle, rgba(212, 175, 55, 0.35) 0, rgba(212, 175, 55, 0) 2px),
+    radial-gradient(circle, rgba(243, 226, 162, 0.25) 0, rgba(243, 226, 162, 0) 1.5px),
+    radial-gradient(circle, rgba(212, 175, 55, 0.2) 0, rgba(212, 175, 55, 0) 1px);
+  background-size: 220px 220px, 280px 280px, 320px 320px;
+  animation: stardustDrift 18s linear infinite;
+}
+
+:global(.dark) .stardust-layer {
+  opacity: 0.18;
+  mix-blend-mode: screen;
+}
+
 @keyframes heroSlideLtr {
   0% {
     opacity: 0;
@@ -631,6 +664,15 @@ onUnmounted(() => {
   100% {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes stardustDrift {
+  0% {
+    background-position: 0 0, 0 0, 0 0;
+  }
+  100% {
+    background-position: 220px 120px, -280px 160px, 160px -200px;
   }
 }
 
