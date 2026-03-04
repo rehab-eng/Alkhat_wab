@@ -367,7 +367,7 @@
     projectsListTitle: 'محفظة المشاريع',
     projectsEmpty: 'لا توجد مشاريع بعد.',
     statsTitle: 'إحصاءات الشركة المباشرة',
-    statsSubtitle: 'حدّث الأرقام التي تغذي عدادات الصفحة الرئيسية.',
+    statsSubtitle: '',
     statsSave: 'حفظ التغييرات',
     statsSaved: 'تم تحديث الإحصاءات',
     heroBadge: 'شركة خطوط الرمال للمقاولات العامة',
