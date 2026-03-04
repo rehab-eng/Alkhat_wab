@@ -27,6 +27,9 @@ const applyTheme = (value) => {
     }
     root.style.colorScheme = value ? 'dark' : 'light'
     root.setAttribute('data-theme', value ? 'dark' : 'light')
+    if (document.body && document.body.style) {
+      document.body.style.backgroundColor = value ? '#111827' : '#f7f2e8'
+    }
   } catch (error) {
     // Never allow theme toggling to crash the app.
   }
@@ -137,7 +140,7 @@ const setLanguage = (value) => {
 <style>
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
 html {
@@ -152,11 +155,14 @@ html[dir='rtl'] {
 body {
   margin: 0;
   min-height: 100%;
-  background-color: #111827;
+  background-color: #f7f2e8;
   color: inherit;
   display: block;
 }
 
+.dark body {
+  background-color: #111827;
+}
 #app {
   max-width: none;
   margin: 0;

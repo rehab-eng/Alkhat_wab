@@ -686,20 +686,20 @@ onUnmounted(() => {
   inset: 0;
   pointer-events: none;
   opacity: 0.6;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
   background-image:
     radial-gradient(circle, rgba(212, 175, 55, 0.4) 0, rgba(212, 175, 55, 0) 2px),
     radial-gradient(circle, rgba(243, 226, 162, 0.3) 0, rgba(243, 226, 162, 0) 1.5px),
     radial-gradient(circle, rgba(212, 175, 55, 0.25) 0, rgba(212, 175, 55, 0) 1px);
   background-size: 220px 220px, 280px 280px, 320px 320px;
   animation: stardustDrift 18s linear infinite;
-  filter: saturate(1.15) brightness(1.05);
+  filter: none;
 }
 
 :global(.dark) .stardust-layer {
   opacity: 0.25;
-  mix-blend-mode: screen;
-  filter: saturate(1.05) brightness(1.05);
+  mix-blend-mode: normal;
+  filter: none;
 }
 
 @media (max-width: 768px) {
