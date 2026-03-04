@@ -8,8 +8,13 @@ export default defineConfig({
     {
       name: 'defer-css',
       transformIndexHtml(html) {
-        const re = new RegExp('<link rel="stylesheet" href="([^"]+\\\\.css)"(?![^>]*onload)[^>]*>', 'g')
-        return html.replace(re, (_match, href) => {
+        return html.replace(/<link[^>]+rel=["']stylesheet["'][^>]*>/g, (tag) => {
+          const hrefMatch = tag.match(/href=["']([^"']+)["']/)
+          if (!hrefMatch) return tag
+          const href = hrefMatch[1]
+          if (href.startsWith('http')) {
+            return tag
+          }
           return (
             `<link rel="preload" as="style" href="${href}" onload="this.onload=null;this.rel='stylesheet'">` +
             `<noscript><link rel="stylesheet" href="${href}"></noscript>`
