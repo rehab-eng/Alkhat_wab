@@ -108,12 +108,12 @@ const setLanguage = (value) => {
 }
 
 html {
-  font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, Arial, sans-serif;
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
   scroll-behavior: smooth;
 }
 
 html[dir='rtl'] {
-  font-family: Tahoma, Arial, system-ui, sans-serif;
+  font-family: 'Cairo', 'Manrope', system-ui, -apple-system, sans-serif;
 }
 
 body {
@@ -139,14 +139,14 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: 'Marcellus', serif;
 }
 
 html[dir='rtl'] h1,
 html[dir='rtl'] h2,
 html[dir='rtl'] h3,
 html[dir='rtl'] h4 {
-  font-family: Tahoma, Arial, system-ui, sans-serif;
+  font-family: 'Cairo', 'Manrope', system-ui, -apple-system, sans-serif;
 }
 
 html[dir='rtl'] [class*='tracking-'] {
