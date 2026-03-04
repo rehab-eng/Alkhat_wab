@@ -22,6 +22,7 @@ const applyTheme = (value) => {
     } else {
       root.classList.remove('dark')
     }
+    root.style.colorScheme = value ? 'dark' : 'light'
   } catch (error) {
     // Never allow theme toggling to crash the app.
   }
@@ -37,18 +38,31 @@ const applyLanguage = () => {
   }
 }
 
+const setTheme = (value) => {
+  try {
+    isDark.value = Boolean(value)
+    applyTheme(isDark.value)
+    try {
+      localStorage.setItem('khututs-theme', isDark.value ? 'dark' : 'light')
+    } catch (error) {
+      // Ignore storage errors.
+    }
+  } catch (error) {
+    // Final guard against toggle crashes.
+  }
+}
+
 onMounted(() => {
+  let nextTheme = false
   try {
     const savedTheme = localStorage.getItem('khututs-theme')
     if (savedTheme === 'light' || savedTheme === 'dark') {
-      isDark.value = savedTheme === 'dark'
-    } else if (typeof window !== 'undefined' && window.matchMedia) {
-      isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+      nextTheme = savedTheme === 'dark'
     }
   } catch (error) {
     // Ignore storage errors (e.g., Safari private mode).
   }
-  applyTheme(isDark.value)
+  setTheme(nextTheme)
 
   try {
     const savedLang = localStorage.getItem('khututs-lang')
@@ -61,15 +75,6 @@ onMounted(() => {
   applyLanguage()
 })
 
-watch(isDark, (value) => {
-  applyTheme(value)
-  try {
-    localStorage.setItem('khututs-theme', value ? 'dark' : 'light')
-  } catch (error) {
-    // Ignore storage errors.
-  }
-})
-
 watch(language, (value) => {
   applyLanguage()
   try {
@@ -80,7 +85,7 @@ watch(language, (value) => {
 })
 
 const toggleTheme = () => {
-  isDark.value = !isDark.value
+  setTheme(!isDark.value)
 }
 
 const setLanguage = (value) => {
