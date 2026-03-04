@@ -59,7 +59,7 @@ const fallbackStats = [
     labelKey: 'statSafety',
     captionKey: 'statSafetyCaption',
     value: 50000,
-    suffix: '%',
+    suffix: '',
   },
 ]
 
@@ -446,56 +446,6 @@ onUnmounted(() => {
                 </div>
               </div>
 
-              <div class="rounded-2xl border border-white/10 bg-white/5 p-4" :class="isRtl ? 'text-right' : ''">
-                <div class="flex items-start justify-between gap-4" :class="isRtl ? 'flex-row-reverse' : ''">
-                  <div>
-                    <p class="text-xs uppercase tracking-[0.3em] text-slate-300">{{ t('fleetGalleryTitle') }}</p>
-                    <p v-if="t('fleetGallerySubtitle').trim()" class="mt-2 text-sm text-slate-200">{{ t('fleetGallerySubtitle') }}</p>
-                  </div>
-                  <span class="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-slate-300">
-                    {{ vehicles.length }}
-                  </span>
-                </div>
-
-                <div class="mt-4 flex gap-3 overflow-x-auto pb-2">
-                  <div
-                    v-if="vehiclesLoading"
-                    class="min-w-[200px] rounded-2xl border border-white/10 bg-white/5 p-4 text-xs uppercase tracking-[0.3em] text-slate-300"
-                  >
-                    {{ t('trucksLoading') }}
-                  </div>
-                  <div
-                    v-else-if="!vehicles.length && t('trucksEmpty')"
-                    class="min-w-[200px] rounded-2xl border border-white/10 bg-white/5 p-4 text-xs uppercase tracking-[0.3em] text-slate-300"
-                  >
-                    {{ t('trucksEmpty') }}
-                  </div>
-                  <div
-                    v-for="vehicle in vehicles"
-                    :key="vehicle.id"
-                    class="min-w-[220px] overflow-hidden rounded-2xl border border-white/10 bg-white/5"
-                  >
-                    <div class="aspect-[4/3] w-full overflow-hidden">
-                      <img
-                        v-if="resolveImage(vehicle)"
-                        :src="resolveImage(vehicle)"
-                        :alt="language === 'ar' ? `????? ??? ???? - ${vehicle.title}` : vehicle.title"
-                        width="800"
-                        height="600"
-                        loading="lazy"
-                        class="h-full w-full object-cover"
-                      />
-                      <div v-else class="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-300">
-                        {{ t('heroCardTitle') }}
-                      </div>
-                    </div>
-                    <div class="p-3" :class="isRtl ? 'text-right' : ''">
-                      <p class="text-xs uppercase tracking-[0.25em] text-slate-200">{{ vehicle.title }}</p>
-                      <p class="mt-2 text-xs text-slate-300">{{ vehicle.description }}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <div class="absolute -bottom-6 -left-6 hidden h-24 w-24 rounded-2xl border border-[#d4af37]/50 bg-[#f3e2a2]/30 sm:block dark:opacity-0"></div>
