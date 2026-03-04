@@ -36,6 +36,7 @@ const displayValues = ref([])
 const hasAnimated = ref(false)
 let observer
 let refreshInterval
+const ENABLE_ANIMATION = false
 
 const fallbackStats = [
   {
@@ -82,7 +83,7 @@ const displayStats = computed(() => {
 })
 
 const setDisplayValues = () => {
-  displayValues.value = displayStats.value.map(() => 0)
+  displayValues.value = displayStats.value.map((stat) => (ENABLE_ANIMATION ? 0 : stat.value))
 }
 
 watch(displayStats, () => {
@@ -100,6 +101,10 @@ watch(
 )
 
 const animateStats = () => {
+  if (!ENABLE_ANIMATION) {
+    displayValues.value = displayStats.value.map((stat) => stat.value)
+    return
+  }
   const nowFn =
     typeof performance !== 'undefined' && typeof performance.now === 'function' ? () => performance.now() : () => Date.now()
   const raf =
@@ -320,7 +325,7 @@ onMounted(() => {
   try {
     setDisplayValues()
 
-    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+    if (ENABLE_ANIMATION && typeof window !== 'undefined' && 'IntersectionObserver' in window) {
       observer = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting && !hasAnimated.value) {
@@ -334,7 +339,7 @@ onMounted(() => {
       if (statsRef.value) {
         observer.observe(statsRef.value)
       }
-    } else {
+    } else if (ENABLE_ANIMATION) {
       hasAnimated.value = true
       animateStats()
     }
