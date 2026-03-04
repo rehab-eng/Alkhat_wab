@@ -22,7 +22,7 @@ const api = axios.create({
   baseURL: `${API_BASE}/api`,
 })
 
-const token = ref(localStorage.getItem('khututs-token') || '')
+const token = ref('')
 const authDisabled = true
 const loginError = ref('')
 const loginLoading = ref(false)
@@ -106,10 +106,18 @@ const setAuthToken = (value) => {
   token.value = value
   if (value) {
     api.defaults.headers.common.Authorization = `Token ${value}`
-    localStorage.setItem('khututs-token', value)
+    try {
+      localStorage.setItem('khututs-token', value)
+    } catch (error) {
+      // Ignore storage errors on restricted browsers.
+    }
   } else {
     delete api.defaults.headers.common.Authorization
-    localStorage.removeItem('khututs-token')
+    try {
+      localStorage.removeItem('khututs-token')
+    } catch (error) {
+      // Ignore storage errors on restricted browsers.
+    }
   }
 }
 
@@ -486,6 +494,14 @@ const refreshPublic = async () => {
 }
 
 onMounted(() => {
+  try {
+    const savedToken = localStorage.getItem('khututs-token') || ''
+    if (savedToken) {
+      setAuthToken(savedToken)
+    }
+  } catch (error) {
+    // Ignore storage errors.
+  }
   if (authDisabled) {
     setAuthToken('')
     loadDashboard()

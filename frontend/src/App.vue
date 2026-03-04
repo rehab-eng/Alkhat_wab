@@ -15,7 +15,13 @@ const t = (key) => messages[language.value]?.[key] ?? key
 const applyTheme = (value) => {
   try {
     if (typeof document === 'undefined') return
-    document.documentElement.classList.toggle('dark', value)
+    const root = document.documentElement
+    if (!root || !root.classList) return
+    if (value) {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
   } catch (error) {
     // Never allow theme toggling to crash the app.
   }
