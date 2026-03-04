@@ -139,7 +139,11 @@ const formatStat = (index) => {
   let formatted = value
   if (Number.isFinite(value)) {
     try {
-      formatted = new Intl.NumberFormat(props.language === 'ar' ? 'ar-LY' : 'en-US').format(value)
+      if (typeof Intl !== 'undefined') {
+        formatted = new Intl.NumberFormat(props.language === 'ar' ? 'ar-LY' : 'en-US').format(value)
+      } else {
+        formatted = value
+      }
     } catch (error) {
       formatted = value
     }
@@ -149,8 +153,12 @@ const formatStat = (index) => {
 
 const resolveImage = (item, key = 'image') => {
   if (!item) return ''
-  const rawUrl = item[`${key}_url`] || item[key] || ''
+  let rawUrl = item[`${key}_url`] || item[key] || ''
   if (!rawUrl) return ''
+  if (typeof rawUrl !== 'string') {
+    rawUrl = rawUrl?.url || rawUrl?.path || ''
+  }
+  if (!rawUrl || typeof rawUrl !== 'string') return ''
   if (rawUrl.startsWith('http')) return rawUrl
   return `${API_BASE}${rawUrl}`
 }
@@ -225,15 +233,15 @@ const updateStructuredData = () => {
   }
 
   const services = [
-    'نقل رمال',
-    'توريد ركام',
-    'نقل مواد بناء',
-    'نقل ثقيل',
-    'ردم أساسات',
-    'حفر وردم',
-    'تأجير شاحنات 6x4',
-    'توريد زفت واسفلت',
-    'صيانة الطرق',
+    '??? ????',
+    '????? ????',
+    '??? ???? ????',
+    '??? ????',
+    '??? ??????',
+    '??? ????',
+    '????? ?????? 6x4',
+    '????? ??? ??????',
+    '????? ?????',
   ]
 
   const organization = clean({
@@ -315,30 +323,34 @@ const syncPublicData = async (force = false) => {
 }
 
 onMounted(() => {
-  setDisplayValues()
+  try {
+    setDisplayValues()
 
-  if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
-    observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !hasAnimated.value) {
-          hasAnimated.value = true
-          animateStats()
-        }
-      },
-      { threshold: 0.35 }
-    )
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && !hasAnimated.value) {
+            hasAnimated.value = true
+            animateStats()
+          }
+        },
+        { threshold: 0.35 }
+      )
 
-    if (statsRef.value) {
-      observer.observe(statsRef.value)
+      if (statsRef.value) {
+        observer.observe(statsRef.value)
+      }
+    } else {
+      hasAnimated.value = true
+      animateStats()
     }
-  } else {
-    hasAnimated.value = true
-    animateStats()
-  }
 
-  syncPublicData(true)
-  if (typeof window !== 'undefined') {
-    refreshInterval = setInterval(() => syncPublicData(false), 5000)
+    syncPublicData(true)
+    if (typeof window !== 'undefined') {
+      refreshInterval = setInterval(() => syncPublicData(false), 5000)
+    }
+  } catch (error) {
+    // Never allow runtime errors to block rendering.
   }
 })
 
@@ -356,7 +368,7 @@ onUnmounted(() => {
   <section id="home" class="relative overflow-hidden">
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.18),_transparent_60%)]"></div>
     <div class="absolute -right-32 top-12 h-72 w-72 rounded-full bg-[#d4af37]/20 blur-3xl dark:opacity-0"></div>
-    <div class="absolute -left-20 bottom-10 h-60 w-60 rounded-full bg-[#0b121c]/20 blur-3xl dark:bg-[#f3e2a2]/10"></div>
+    <div class="absolute -left-20 bottom-10 h-60 w-60 rounded-full bg-[#0f172a]/20 blur-3xl dark:bg-[#f3e2a2]/10"></div>
     <div class="stardust-layer"></div>
 
     <div class="relative mx-auto w-full max-w-7xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-24">
@@ -412,7 +424,7 @@ onUnmounted(() => {
                 <img
                   v-if="heroImage"
                   :src="heroImage"
-                  :alt="language === 'ar' ? 'شاحنة نقل ثقيل' : t('heroCardTitle')"
+                  :alt="language === 'ar' ? '????? ??? ????' : t('heroCardTitle')"
                   width="800"
                   height="600"
                   loading="eager"
@@ -467,7 +479,7 @@ onUnmounted(() => {
                       <img
                         v-if="resolveImage(vehicle)"
                         :src="resolveImage(vehicle)"
-                        :alt="language === 'ar' ? `شاحنة نقل ثقيل - ${vehicle.title}` : vehicle.title"
+                        :alt="language === 'ar' ? `????? ??? ???? - ${vehicle.title}` : vehicle.title"
                         width="800"
                         height="600"
                         loading="lazy"
@@ -493,7 +505,7 @@ onUnmounted(() => {
     </div>
   </section>
 
-  <section class="border-y border-slate-200/60 bg-white/70 py-4 dark:border-white/10 dark:bg-slate-950/60">
+  <section class="border-y border-slate-200/60 bg-white/70 py-4 dark:border-white/10 dark:bg-slate-900/70">
     <div class="overflow-hidden">
       <div class="marquee-track">
         <span class="marquee-item">{{ t('marqueeText') }}</span>
@@ -556,7 +568,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-br from-[#0b121c] via-[#182233] to-[#0b121c] p-6 text-white shadow-xl shadow-slate-900/25">
+        <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-br from-[#0f172a] via-[#182233] to-[#0f172a] p-6 text-white shadow-xl shadow-slate-900/25">
           <p class="text-xs uppercase tracking-[0.35em] text-[#f3e2a2]">{{ t('liveFleetOverline') }}</p>
           <h3 class="mt-3 text-xl font-semibold sm:text-2xl">{{ t('liveFleetTitle') }}</h3>
           <p class="mt-2 text-sm text-slate-200">{{ t('liveFleetDesc') }}</p>
@@ -615,7 +627,7 @@ onUnmounted(() => {
 
   <section id="contact" class="py-16 lg:py-20">
     <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-r from-[#f3e2a2]/40 to-white/90 p-8 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:from-[#1b2333] dark:to-[#0b121c]">
+      <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-r from-[#f3e2a2]/40 to-white/90 p-8 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:from-[#1b2333] dark:to-[#0f172a]">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between" :class="isRtl ? 'lg:flex-row-reverse' : ''">
           <div :class="isRtl ? 'text-right' : ''">
             <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f] dark:text-slate-300">{{ t('contactOverline') }}</p>
@@ -673,18 +685,18 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.35;
+  opacity: 0.45;
   mix-blend-mode: screen;
   background-image:
-    radial-gradient(circle, rgba(212, 175, 55, 0.35) 0, rgba(212, 175, 55, 0) 2px),
-    radial-gradient(circle, rgba(243, 226, 162, 0.25) 0, rgba(243, 226, 162, 0) 1.5px),
-    radial-gradient(circle, rgba(212, 175, 55, 0.2) 0, rgba(212, 175, 55, 0) 1px);
+    radial-gradient(circle, rgba(212, 175, 55, 0.4) 0, rgba(212, 175, 55, 0) 2px),
+    radial-gradient(circle, rgba(243, 226, 162, 0.3) 0, rgba(243, 226, 162, 0) 1.5px),
+    radial-gradient(circle, rgba(212, 175, 55, 0.25) 0, rgba(212, 175, 55, 0) 1px);
   background-size: 220px 220px, 280px 280px, 320px 320px;
   animation: stardustDrift 18s linear infinite;
 }
 
 :global(.dark) .stardust-layer {
-  opacity: 0.18;
+  opacity: 0.22;
   mix-blend-mode: screen;
 }
 

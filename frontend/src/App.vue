@@ -64,7 +64,7 @@ const setLanguage = (value) => {
     :class="
       isDashboardRoute
         ? 'min-h-screen bg-[#0b0f14] text-slate-100'
-        : 'min-h-screen bg-[#f7f2e8] text-slate-900 transition-colors duration-300 dark:bg-[#0b121c] dark:text-slate-100'
+        : 'min-h-screen bg-[#f7f2e8] text-slate-900 transition-colors duration-300 dark:bg-[#0f172a] dark:text-slate-100'
     "
   >
     <Navbar
@@ -85,7 +85,7 @@ const setLanguage = (value) => {
 
     <footer
       v-if="!isDashboardRoute"
-      class="border-t border-slate-200/60 bg-white/70 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-400"
+      class="border-t border-slate-200/60 bg-white/70 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500 dark:border-white/10 dark:bg-slate-900/70 dark:text-slate-300"
     >
       {{ t('footerText') }}
     </footer>
@@ -110,7 +110,7 @@ html[dir='rtl'] {
 body {
   margin: 0;
   min-height: 100%;
-  background-color: #0b121c;
+  background-color: #0f172a;
   color: inherit;
   display: block;
 }
@@ -139,6 +139,10 @@ html[dir='rtl'] h2,
 html[dir='rtl'] h3,
 html[dir='rtl'] h4 {
   font-family: 'Cairo', 'Manrope', system-ui, -apple-system, sans-serif;
+}
+
+html[dir='rtl'] [class*='tracking-'] {
+  letter-spacing: 0 !important;
 }
 
 * {

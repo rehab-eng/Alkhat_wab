@@ -41,9 +41,9 @@ const setLanguage = (value) => {
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 border-b border-slate-200/60 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-slate-950/70">
+  <header class="sticky top-0 z-50 border-b border-slate-200/60 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-slate-900/80">
     <div class="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center gap-3" :class="isRtl ? 'flex-row-reverse text-right' : ''">
+      <div class="flex items-center gap-3" :class="isRtl ? 'text-right' : ''">
         <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f3e2a2] to-[#d4af37] text-sm font-semibold text-slate-900 shadow-lg shadow-[#d4af37]/30">
           KA
         </div>
@@ -65,6 +65,32 @@ const setLanguage = (value) => {
       </nav>
 
       <div class="flex items-center gap-2">
+        <div class="flex items-center rounded-full border border-slate-200/70 bg-white/70 p-1 text-xs uppercase tracking-[0.25em] text-slate-600 shadow-sm dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200 sm:hidden">
+          <button
+            type="button"
+            class="rounded-full px-2 py-1 transition"
+            :class="
+              language === 'en'
+                ? 'bg-[#d4af37] text-slate-900 dark:bg-slate-700 dark:text-white'
+                : 'hover:text-slate-900 dark:hover:text-white'
+            "
+            @click="setLanguage('en')"
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            class="rounded-full px-2 py-1 transition"
+            :class="
+              language === 'ar'
+                ? 'bg-[#d4af37] text-slate-900 dark:bg-slate-700 dark:text-white'
+                : 'hover:text-slate-900 dark:hover:text-white'
+            "
+            @click="setLanguage('ar')"
+          >
+            AR
+          </button>
+        </div>
         <div class="hidden items-center rounded-full border border-slate-200/70 bg-white/70 p-1 text-xs uppercase tracking-[0.25em] text-slate-600 shadow-sm dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200 sm:flex">
           <button
             type="button"
@@ -124,7 +150,7 @@ const setLanguage = (value) => {
 
     <div
       v-show="mobileOpen"
-      class="border-t border-slate-200/60 bg-white/95 px-4 py-4 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-950/90 md:hidden"
+      class="border-t border-slate-200/60 bg-white/95 px-4 py-4 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/90 md:hidden"
     >
       <div class="flex flex-col gap-3">
         <div class="flex items-center justify-between rounded-xl border border-slate-200/60 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-700 dark:border-white/10 dark:bg-slate-900/60 dark:text-slate-200">
