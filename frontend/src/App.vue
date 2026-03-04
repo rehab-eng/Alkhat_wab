@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import Navbar from './components/Navbar.vue'
 import { messages } from './i18n'
 
-const isDark = ref(false)
 const language = ref('en')
 const isRtl = computed(() => language.value === 'ar')
 const route = useRoute()
@@ -12,28 +11,7 @@ const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
 
 const t = (key) => messages[language.value]?.[key] ?? key
 
-const THEME_KEY = 'khututs-theme-v2'
 const LANG_KEY = 'khututs-lang'
-
-const applyTheme = (value) => {
-  try {
-    if (typeof document === 'undefined') return
-    const root = document.documentElement
-    if (!root || !root.classList) return
-    if (value) {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-    root.style.colorScheme = value ? 'dark' : 'light'
-    root.setAttribute('data-theme', value ? 'dark' : 'light')
-    if (document.body && document.body.style) {
-      document.body.style.backgroundColor = value ? '#111827' : '#f7f2e8'
-    }
-  } catch (error) {
-    // Never allow theme toggling to crash the app.
-  }
-}
 
 const applyLanguage = () => {
   try {
@@ -45,33 +23,25 @@ const applyLanguage = () => {
   }
 }
 
-const setTheme = (value) => {
-  try {
-    isDark.value = Boolean(value)
-    applyTheme(isDark.value)
-    try {
-      localStorage.setItem(THEME_KEY, isDark.value ? 'dark' : 'light')
-    } catch (error) {
-      // Ignore storage errors.
-    }
-  } catch (error) {
-    // Final guard against toggle crashes.
-  }
-}
-
 onMounted(() => {
-  let nextTheme = false
   try {
-    const savedTheme = localStorage.getItem(THEME_KEY)
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      nextTheme = savedTheme === 'dark'
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.style.colorScheme = 'light'
+      document.documentElement.removeAttribute('data-theme')
+      if (document.body && document.body.style) {
+        document.body.style.backgroundColor = '#f7f2e8'
+      }
     }
-    localStorage.removeItem('khututs-theme')
   } catch (error) {
-    // Ignore storage errors (e.g., Safari private mode).
+    // Ignore DOM errors.
   }
-  setTheme(nextTheme)
-
+  try {
+    localStorage.removeItem('khututs-theme')
+    localStorage.removeItem('khututs-theme-v2')
+  } catch (error) {
+    // Ignore storage errors.
+  }
   try {
     const savedLang = localStorage.getItem(LANG_KEY)
     if (savedLang === 'en' || savedLang === 'ar') {
@@ -92,10 +62,6 @@ watch(language, (value) => {
   }
 })
 
-const toggleTheme = () => {
-  setTheme(!isDark.value)
-}
-
 const setLanguage = (value) => {
   if (value === 'en' || value === 'ar') {
     language.value = value
@@ -109,16 +75,14 @@ const setLanguage = (value) => {
     :class="
       isDashboardRoute
         ? 'min-h-screen bg-[#0b0f14] text-slate-100'
-        : 'min-h-screen bg-[#f7f2e8] text-slate-900 transition-colors duration-300 dark:bg-[#111827] dark:text-slate-100'
+        : 'min-h-screen bg-[#f7f2e8] text-slate-900 transition-colors duration-300'
     "
   >
     <Navbar
       v-if="!isDashboardRoute"
-      :is-dark="isDark"
       :language="language"
       :is-rtl="isRtl"
       :t="t"
-      @toggle-theme="toggleTheme"
       @change-language="setLanguage"
     />
 
@@ -130,7 +94,7 @@ const setLanguage = (value) => {
 
     <footer
       v-if="!isDashboardRoute"
-      class="border-t border-slate-200/60 bg-white/70 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500 dark:border-white/10 dark:bg-slate-900/80 dark:text-slate-300"
+      class="border-t border-slate-200/60 bg-white/70 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-500"
     >
       {{ t('footerText') }}
     </footer>
@@ -158,10 +122,6 @@ body {
   background-color: #f7f2e8;
   color: inherit;
   display: block;
-}
-
-.dark body {
-  background-color: #111827;
 }
 #app {
   max-width: none;
@@ -191,15 +151,6 @@ html[dir='rtl'] h4 {
 
 html[dir='rtl'] [class*='tracking-'] {
   letter-spacing: 0 !important;
-}
-
-.dark .text-slate-300,
-.dark .text-slate-400 {
-  color: #f1f5f9 !important;
-}
-
-.dark .text-slate-500 {
-  color: #e2e8f0 !important;
 }
 
 * {
