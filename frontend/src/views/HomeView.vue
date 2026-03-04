@@ -368,7 +368,7 @@ onUnmounted(() => {
   <section id="home" class="relative overflow-hidden">
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.18),_transparent_60%)]"></div>
     <div class="absolute -right-32 top-12 h-72 w-72 rounded-full bg-[#d4af37]/20 blur-3xl dark:opacity-0"></div>
-    <div class="absolute -left-20 bottom-10 h-60 w-60 rounded-full bg-[#0f172a]/20 blur-3xl dark:bg-[#f3e2a2]/10"></div>
+    <div class="absolute -left-20 bottom-10 h-60 w-60 rounded-full bg-[#111827]/20 blur-3xl dark:bg-[#f3e2a2]/10"></div>
     <div class="stardust-layer"></div>
 
     <div class="relative mx-auto w-full max-w-7xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-24">
@@ -378,18 +378,18 @@ onUnmounted(() => {
             {{ heroBadge }}
           </div>
           <h1
-            class="hero-slide text-3xl font-semibold leading-tight text-slate-900 dark:text-white sm:text-4xl lg:text-5xl"
+            class="hero-slide break-words text-2xl font-semibold leading-tight text-slate-900 dark:text-white sm:text-3xl lg:text-5xl"
             :class="isRtl ? 'hero-slide-rtl' : 'hero-slide-ltr'"
           >
             {{ heroTitle }}
           </h1>
           <h2
-            class="hero-slide text-lg font-semibold text-slate-700 dark:text-slate-300 sm:text-xl"
+            class="hero-slide break-words text-base font-semibold text-slate-700 dark:text-slate-300 sm:text-lg"
             :class="isRtl ? 'hero-slide-rtl' : 'hero-slide-ltr'"
           >
             {{ t('heroSeoSubheading') }}
           </h2>
-          <p class="text-base text-slate-600 dark:text-slate-300">
+          <p class="text-sm text-slate-600 dark:text-slate-300 sm:text-base">
             {{ heroDesc }}
           </p>
           <div class="flex flex-wrap items-center gap-3" :class="isRtl ? 'justify-end' : ''">
@@ -529,7 +529,7 @@ onUnmounted(() => {
           :key="`${stat.label}-${index}`"
           class="rounded-3xl border border-slate-200/70 bg-white/90 p-5 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70"
         >
-          <p class="text-3xl font-semibold text-slate-900 dark:text-white">
+          <p class="text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">
             {{ formatStat(index) }}
           </p>
           <p class="mt-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-300">{{ stat.label }}</p>
@@ -544,8 +544,8 @@ onUnmounted(() => {
       <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
         <div class="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:bg-slate-900/70">
           <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f] dark:text-slate-300">{{ t('featuredOverline') }}</p>
-          <h3 class="mt-3 text-xl font-semibold text-slate-900 dark:text-white sm:text-2xl">{{ t('featuredTitle') }}</h3>
-          <p class="mt-3 text-sm text-slate-500 dark:text-slate-300">
+          <h3 class="mt-3 text-lg font-semibold text-slate-900 dark:text-white sm:text-2xl">{{ t('featuredTitle') }}</h3>
+          <p class="mt-3 text-sm text-slate-500 dark:text-slate-300 sm:text-base">
             {{ t('featuredDesc') }}
           </p>
           <div class="mt-6 grid gap-4 sm:grid-cols-2">
@@ -568,10 +568,10 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-br from-[#0f172a] via-[#182233] to-[#0f172a] p-6 text-white shadow-xl shadow-slate-900/25">
+        <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-br from-[#111827] via-[#1f2a44] to-[#111827] p-6 text-white shadow-xl shadow-slate-900/25">
           <p class="text-xs uppercase tracking-[0.35em] text-[#f3e2a2]">{{ t('liveFleetOverline') }}</p>
-          <h3 class="mt-3 text-xl font-semibold sm:text-2xl">{{ t('liveFleetTitle') }}</h3>
-          <p class="mt-2 text-sm text-slate-200">{{ t('liveFleetDesc') }}</p>
+          <h3 class="mt-3 text-lg font-semibold sm:text-2xl">{{ t('liveFleetTitle') }}</h3>
+          <p class="mt-2 text-sm text-slate-200 sm:text-base">{{ t('liveFleetDesc') }}</p>
           <div class="mt-6 space-y-3">
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4" :class="isRtl ? 'text-right' : ''">
               <p class="text-xs uppercase tracking-[0.3em] text-slate-300">{{ t('liveFleetOnRouteLabel') }}</p>
@@ -597,8 +597,8 @@ onUnmounted(() => {
         <div class="grid gap-8 lg:grid-cols-2">
           <div :class="isRtl ? 'text-right' : ''">
             <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f] dark:text-slate-300">{{ t('aboutOverline') }}</p>
-            <h3 class="mt-3 text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{{ t('aboutTitle') }}</h3>
-            <p class="mt-3 text-sm text-slate-500 dark:text-slate-300">
+            <h3 class="mt-3 text-xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{{ t('aboutTitle') }}</h3>
+            <p class="mt-3 text-sm text-slate-500 dark:text-slate-300 sm:text-base">
               {{ t('aboutDesc') }}
             </p>
           </div>
@@ -627,12 +627,12 @@ onUnmounted(() => {
 
   <section id="contact" class="py-16 lg:py-20">
     <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-r from-[#f3e2a2]/40 to-white/90 p-8 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:from-[#1b2333] dark:to-[#0f172a]">
+      <div class="rounded-3xl border border-slate-200/70 bg-gradient-to-r from-[#f3e2a2]/40 to-white/90 p-8 shadow-xl shadow-slate-900/5 backdrop-blur dark:border-white/10 dark:from-[#1b2333] dark:to-[#111827]">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between" :class="isRtl ? 'lg:flex-row-reverse' : ''">
           <div :class="isRtl ? 'text-right' : ''">
             <p class="text-xs uppercase tracking-[0.35em] text-[#8a6a2f] dark:text-slate-300">{{ t('contactOverline') }}</p>
-            <h3 class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{{ t('contactTitle') }}</h3>
-            <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">{{ t('contactDesc') }}</p>
+            <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-white sm:text-3xl">{{ t('contactTitle') }}</h3>
+            <p class="mt-3 text-sm text-slate-600 dark:text-slate-300 sm:text-base">{{ t('contactDesc') }}</p>
             <div
               v-if="contactPhone || contactEmail || contactNumbers.length"
               class="mt-4 space-y-1 text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300"
@@ -685,19 +685,21 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.45;
-  mix-blend-mode: screen;
+  opacity: 0.6;
+  mix-blend-mode: multiply;
   background-image:
     radial-gradient(circle, rgba(212, 175, 55, 0.4) 0, rgba(212, 175, 55, 0) 2px),
     radial-gradient(circle, rgba(243, 226, 162, 0.3) 0, rgba(243, 226, 162, 0) 1.5px),
     radial-gradient(circle, rgba(212, 175, 55, 0.25) 0, rgba(212, 175, 55, 0) 1px);
   background-size: 220px 220px, 280px 280px, 320px 320px;
   animation: stardustDrift 18s linear infinite;
+  filter: saturate(1.15) brightness(1.05);
 }
 
 :global(.dark) .stardust-layer {
-  opacity: 0.22;
+  opacity: 0.25;
   mix-blend-mode: screen;
+  filter: saturate(1.05) brightness(1.05);
 }
 
 @keyframes heroSlideLtr {

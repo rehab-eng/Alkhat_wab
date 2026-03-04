@@ -74,7 +74,7 @@ const navItems = computed(() => {
     <div v-if="isOpen" class="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm md:hidden" @click="isOpen = false"></div>
 
     <aside
-      class="fixed inset-y-0 z-50 w-72 bg-white/95 p-6 shadow-2xl shadow-slate-900/20 backdrop-blur transition-transform duration-300 dark:bg-slate-950/90 md:static md:translate-x-0 md:rounded-3xl md:border md:shadow-xl"
+      class="fixed inset-y-0 z-50 w-72 bg-white/95 p-6 shadow-2xl shadow-slate-900/20 backdrop-blur transition-transform duration-300 dark:bg-slate-900/90 md:static md:translate-x-0 md:rounded-3xl md:border md:shadow-xl"
       :class="[
         isRtl ? 'right-0 border-l border-slate-200/70 dark:border-white/10' : 'left-0 border-r border-slate-200/70 dark:border-white/10',
         isOpen ? 'translate-x-0' : isRtl ? 'translate-x-full md:translate-x-0' : '-translate-x-full md:translate-x-0',

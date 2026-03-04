@@ -501,7 +501,7 @@ onMounted(() => {
 <template>
   <section class="min-h-screen bg-[#0b0f14] text-slate-100">
     <div class="mx-auto w-full max-w-7xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
-      <header class="border border-[#1f2a37] bg-[#0f172a]/80 p-6">
+      <header class="border border-[#1f2a37] bg-[#111827]/80 p-6">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between" :class="isRtl ? 'lg:flex-row-reverse' : ''">
           <div :class="isRtl ? 'text-right' : ''">
             <p class="text-xs uppercase tracking-[0.35em] text-[#d4af37]">{{ t('consoleOverline') }}</p>
@@ -540,7 +540,7 @@ onMounted(() => {
       </div>
 
       <div class="mt-6 grid gap-6 lg:grid-cols-[240px_1fr]">
-        <aside class="border border-[#1f2a37] bg-[#0f172a]/70 p-5" :class="isRtl ? 'text-right' : ''">
+        <aside class="border border-[#1f2a37] bg-[#111827]/70 p-5" :class="isRtl ? 'text-right' : ''">
           <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('dashboardOverline') }}</p>
           <h2 class="mt-2 text-lg font-semibold text-white">{{ t('dashboardTitle') }}</h2>
           <nav class="mt-6 space-y-3 text-sm">
@@ -560,7 +560,7 @@ onMounted(() => {
         </aside>
 
         <main class="space-y-10">
-          <section id="overview" class="border border-[#1f2a37] bg-[#0f172a]/70 p-6" :class="isRtl ? 'text-right' : ''">
+          <section id="overview" class="border border-[#1f2a37] bg-[#111827]/70 p-6" :class="isRtl ? 'text-right' : ''">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between" :class="isRtl ? 'lg:flex-row-reverse' : ''">
               <div>
                 <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('consoleLastSync') }}</p>
@@ -583,7 +583,7 @@ onMounted(() => {
             </div>
           </section>
 
-          <section id="vehicles" class="border border-[#1f2a37] bg-[#0f172a]/70 p-6">
+          <section id="vehicles" class="border border-[#1f2a37] bg-[#111827]/70 p-6">
             <div class="flex flex-col gap-2" :class="isRtl ? 'text-right' : ''">
               <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('vehiclesTitle') }}</p>
               <h3 class="text-2xl font-semibold text-white">{{ t('vehicleFormTitle') }}</h3>
@@ -630,7 +630,7 @@ onMounted(() => {
               </div>
               <div class="border border-[#1f2a37] bg-[#0b1220] p-4">
                 <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('vehicleFieldImage') }}</p>
-                <div class="mt-4 aspect-[4/3] w-full overflow-hidden border border-[#1f2a37] bg-[#0f172a]">
+                <div class="mt-4 aspect-[4/3] w-full overflow-hidden border border-[#1f2a37] bg-[#111827]">
                   <img v-if="vehicleImagePreview" :src="vehicleImagePreview" :alt="vehicleForm.title" class="h-full w-full object-cover" />
                   <div v-else class="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-500">
                     {{ t('vehicleFieldImage') }}
@@ -646,7 +646,7 @@ onMounted(() => {
               </div>
               <div class="overflow-x-auto">
                 <table class="w-full text-sm">
-                  <thead class="bg-[#0f172a] text-xs uppercase tracking-[0.3em] text-slate-400">
+                  <thead class="bg-[#111827] text-xs uppercase tracking-[0.3em] text-slate-400">
                     <tr>
                       <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('vehicleTableHeaderTitle') }}</th>
                       <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('vehicleTableHeaderDescription') }}</th>
@@ -662,7 +662,7 @@ onMounted(() => {
                     >
                       <td class="px-4 py-3">
                         <div class="flex items-center gap-3" :class="isRtl ? 'flex-row-reverse' : ''">
-                          <div class="h-10 w-14 overflow-hidden border border-[#1f2a37] bg-[#0f172a]">
+                          <div class="h-10 w-14 overflow-hidden border border-[#1f2a37] bg-[#111827]">
                             <img v-if="resolveImage(vehicle)" :src="resolveImage(vehicle)" :alt="vehicle.title" class="h-full w-full object-cover" />
                           </div>
                           <div :class="isRtl ? 'text-right' : ''">
@@ -699,7 +699,7 @@ onMounted(() => {
             </div>
           </section>
 
-          <section id="statistics" class="border border-[#1f2a37] bg-[#0f172a]/70 p-6">
+          <section id="statistics" class="border border-[#1f2a37] bg-[#111827]/70 p-6">
             <div class="flex flex-col gap-2" :class="isRtl ? 'text-right' : ''">
               <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('statisticsTitle') }}</p>
               <h3 class="text-2xl font-semibold text-white">{{ t('statsTitle') }}</h3>
@@ -709,15 +709,15 @@ onMounted(() => {
             <div class="mt-6 grid gap-4 lg:grid-cols-2">
               <div class="grid gap-3 border border-[#1f2a37] bg-[#0b1220] p-4">
                 <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('statFormTitle') }}</p>
-                <input v-model="statForm.key" :placeholder="t('statKeyLabel')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
-                <input v-model="statForm.label_en" :placeholder="t('statLabelEn')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
-                <input v-model="statForm.label_ar" :placeholder="t('statLabelAr')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
-                <input v-model="statForm.caption_en" :placeholder="t('statCaptionEn')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
-                <input v-model="statForm.caption_ar" :placeholder="t('statCaptionAr')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                <input v-model="statForm.key" :placeholder="t('statKeyLabel')" class="border border-[#1f2a37] bg-[#111827] px-3 py-2 text-sm text-slate-200" />
+                <input v-model="statForm.label_en" :placeholder="t('statLabelEn')" class="border border-[#1f2a37] bg-[#111827] px-3 py-2 text-sm text-slate-200" />
+                <input v-model="statForm.label_ar" :placeholder="t('statLabelAr')" class="border border-[#1f2a37] bg-[#111827] px-3 py-2 text-sm text-slate-200" />
+                <input v-model="statForm.caption_en" :placeholder="t('statCaptionEn')" class="border border-[#1f2a37] bg-[#111827] px-3 py-2 text-sm text-slate-200" />
+                <input v-model="statForm.caption_ar" :placeholder="t('statCaptionAr')" class="border border-[#1f2a37] bg-[#111827] px-3 py-2 text-sm text-slate-200" />
                 <div class="grid gap-3 sm:grid-cols-3">
-                  <input v-model.number="statForm.value" type="number" :placeholder="t('statValueLabel')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
-                  <input v-model="statForm.suffix" :placeholder="t('statSuffixLabel')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
-                  <input v-model.number="statForm.order" type="number" :placeholder="t('statOrderLabel')" class="border border-[#1f2a37] bg-[#0f172a] px-3 py-2 text-sm text-slate-200" />
+                  <input v-model.number="statForm.value" type="number" :placeholder="t('statValueLabel')" class="border border-[#1f2a37] bg-[#111827] px-3 py-2 text-sm text-slate-200" />
+                  <input v-model="statForm.suffix" :placeholder="t('statSuffixLabel')" class="border border-[#1f2a37] bg-[#111827] px-3 py-2 text-sm text-slate-200" />
+                  <input v-model.number="statForm.order" type="number" :placeholder="t('statOrderLabel')" class="border border-[#1f2a37] bg-[#111827] px-3 py-2 text-sm text-slate-200" />
                 </div>
                 <div class="flex items-center gap-3">
                   <button class="border border-[#d4af37] bg-[#d4af37] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-900" @click="createStatistic">
@@ -734,7 +734,7 @@ onMounted(() => {
                 </div>
                 <div class="overflow-x-auto">
                   <table class="w-full text-sm">
-                    <thead class="bg-[#0f172a] text-xs uppercase tracking-[0.3em] text-slate-400">
+                    <thead class="bg-[#111827] text-xs uppercase tracking-[0.3em] text-slate-400">
                       <tr>
                         <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('statTableHeaderKey') }}</th>
                         <th class="px-4 py-3 text-left" :class="isRtl ? 'text-right' : ''">{{ t('statTableHeaderLabel') }}</th>
@@ -750,22 +750,22 @@ onMounted(() => {
                         class="border-t border-[#1f2a37] text-slate-200 hover:bg-[#0b1220]"
                       >
                         <td class="px-4 py-3">
-                          <input v-model="stat.key" class="w-32 border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                          <input v-model="stat.key" class="w-32 border border-[#1f2a37] bg-[#111827] px-2 py-1 text-xs text-slate-200" />
                         </td>
                         <td class="px-4 py-3">
                           <div class="grid gap-2">
-                            <input v-model="stat.label_en" class="border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
-                            <input v-model="stat.label_ar" class="border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                            <input v-model="stat.label_en" class="border border-[#1f2a37] bg-[#111827] px-2 py-1 text-xs text-slate-200" />
+                            <input v-model="stat.label_ar" class="border border-[#1f2a37] bg-[#111827] px-2 py-1 text-xs text-slate-200" />
                           </div>
                         </td>
                         <td class="px-4 py-3">
                           <div class="grid gap-2">
-                            <input v-model.number="stat.value" type="number" class="w-24 border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
-                            <input v-model="stat.suffix" class="w-20 border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                            <input v-model.number="stat.value" type="number" class="w-24 border border-[#1f2a37] bg-[#111827] px-2 py-1 text-xs text-slate-200" />
+                            <input v-model="stat.suffix" class="w-20 border border-[#1f2a37] bg-[#111827] px-2 py-1 text-xs text-slate-200" />
                           </div>
                         </td>
                         <td class="px-4 py-3">
-                          <input v-model.number="stat.order" type="number" class="w-20 border border-[#1f2a37] bg-[#0f172a] px-2 py-1 text-xs text-slate-200" />
+                          <input v-model.number="stat.order" type="number" class="w-20 border border-[#1f2a37] bg-[#111827] px-2 py-1 text-xs text-slate-200" />
                         </td>
                         <td class="px-4 py-3">
                           <div class="flex items-center gap-3" :class="isRtl ? 'flex-row-reverse' : ''">
@@ -795,7 +795,7 @@ onMounted(() => {
             </div>
           </section>
 
-          <section id="settings" class="border border-[#1f2a37] bg-[#0f172a]/70 p-6">
+          <section id="settings" class="border border-[#1f2a37] bg-[#111827]/70 p-6">
             <div class="flex flex-col gap-2" :class="isRtl ? 'text-right' : ''">
               <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('settingsTitle') }}</p>
               <h3 class="text-2xl font-semibold text-white">{{ t('settingsTitle') }}</h3>
@@ -838,8 +838,8 @@ onMounted(() => {
               <div class="grid gap-4">
                 <div class="border border-[#1f2a37] bg-[#0b1220] p-4">
                   <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('settingsLogo') }}</p>
-                  <input type="file" accept="image/*" class="mt-3 w-full border border-dashed border-[#d4af37]/60 bg-[#0f172a] px-3 py-2 text-xs uppercase tracking-[0.3em] text-slate-300" @change="handleSiteLogo" />
-                  <div class="mt-3 aspect-[4/3] w-full overflow-hidden border border-[#1f2a37] bg-[#0f172a]">
+                  <input type="file" accept="image/*" class="mt-3 w-full border border-dashed border-[#d4af37]/60 bg-[#111827] px-3 py-2 text-xs uppercase tracking-[0.3em] text-slate-300" @change="handleSiteLogo" />
+                  <div class="mt-3 aspect-[4/3] w-full overflow-hidden border border-[#1f2a37] bg-[#111827]">
                     <img v-if="siteLogoPreview" :src="siteLogoPreview" alt="logo" class="h-full w-full object-cover" />
                     <div v-else class="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-500">
                       {{ t('settingsLogo') }}
@@ -848,8 +848,8 @@ onMounted(() => {
                 </div>
                 <div class="border border-[#1f2a37] bg-[#0b1220] p-4">
                   <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ t('settingsHeroImage') }}</p>
-                  <input type="file" accept="image/*" class="mt-3 w-full border border-dashed border-[#d4af37]/60 bg-[#0f172a] px-3 py-2 text-xs uppercase tracking-[0.3em] text-slate-300" @change="handleSiteHero" />
-                  <div class="mt-3 aspect-[4/3] w-full overflow-hidden border border-[#1f2a37] bg-[#0f172a]">
+                  <input type="file" accept="image/*" class="mt-3 w-full border border-dashed border-[#d4af37]/60 bg-[#111827] px-3 py-2 text-xs uppercase tracking-[0.3em] text-slate-300" @change="handleSiteHero" />
+                  <div class="mt-3 aspect-[4/3] w-full overflow-hidden border border-[#1f2a37] bg-[#111827]">
                     <img v-if="siteHeroPreview" :src="siteHeroPreview" alt="hero" class="h-full w-full object-cover" />
                     <div v-else class="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-500">
                       {{ t('settingsHeroImage') }}
@@ -863,7 +863,7 @@ onMounted(() => {
       </div>
 
       <div v-if="!isAuthenticated" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-        <div class="w-full max-w-md border border-[#1f2a37] bg-[#0f172a] p-6">
+        <div class="w-full max-w-md border border-[#1f2a37] bg-[#111827] p-6">
           <div class="flex flex-col gap-2" :class="isRtl ? 'text-right' : ''">
             <p class="text-xs uppercase tracking-[0.35em] text-slate-400">{{ t('adminSecureNote') }}</p>
             <h3 class="text-2xl font-semibold text-white">{{ t('loginTitle') }}</h3>

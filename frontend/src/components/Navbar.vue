@@ -43,7 +43,7 @@ const setLanguage = (value) => {
 <template>
   <header class="sticky top-0 z-50 border-b border-slate-200/60 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-slate-900/80">
     <div class="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center gap-3" :class="isRtl ? 'text-right' : ''">
+      <div class="flex items-center gap-3" :class="isRtl ? 'flex-row-reverse text-right' : ''">
         <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f3e2a2] to-[#d4af37] text-sm font-semibold text-slate-900 shadow-lg shadow-[#d4af37]/30">
           KA
         </div>
