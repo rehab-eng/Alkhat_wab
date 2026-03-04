@@ -702,6 +702,20 @@ onUnmounted(() => {
   filter: saturate(1.05) brightness(1.05);
 }
 
+@media (max-width: 768px) {
+  .stardust-layer {
+    opacity: 0.28;
+    mix-blend-mode: normal;
+    filter: none;
+    background-size: 180px 180px, 220px 220px, 260px 260px;
+    animation-duration: 24s;
+  }
+
+  :global(.dark) .stardust-layer {
+    opacity: 0.18;
+  }
+}
+
 @keyframes heroSlideLtr {
   0% {
     opacity: 0;

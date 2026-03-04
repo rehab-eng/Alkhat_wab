@@ -12,6 +12,9 @@ const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
 
 const t = (key) => messages[language.value]?.[key] ?? key
 
+const THEME_KEY = 'khututs-theme-v2'
+const LANG_KEY = 'khututs-lang'
+
 const applyTheme = (value) => {
   try {
     if (typeof document === 'undefined') return
@@ -23,6 +26,7 @@ const applyTheme = (value) => {
       root.classList.remove('dark')
     }
     root.style.colorScheme = value ? 'dark' : 'light'
+    root.setAttribute('data-theme', value ? 'dark' : 'light')
   } catch (error) {
     // Never allow theme toggling to crash the app.
   }
@@ -43,7 +47,7 @@ const setTheme = (value) => {
     isDark.value = Boolean(value)
     applyTheme(isDark.value)
     try {
-      localStorage.setItem('khututs-theme', isDark.value ? 'dark' : 'light')
+      localStorage.setItem(THEME_KEY, isDark.value ? 'dark' : 'light')
     } catch (error) {
       // Ignore storage errors.
     }
@@ -55,17 +59,18 @@ const setTheme = (value) => {
 onMounted(() => {
   let nextTheme = false
   try {
-    const savedTheme = localStorage.getItem('khututs-theme')
+    const savedTheme = localStorage.getItem(THEME_KEY)
     if (savedTheme === 'light' || savedTheme === 'dark') {
       nextTheme = savedTheme === 'dark'
     }
+    localStorage.removeItem('khututs-theme')
   } catch (error) {
     // Ignore storage errors (e.g., Safari private mode).
   }
   setTheme(nextTheme)
 
   try {
-    const savedLang = localStorage.getItem('khututs-lang')
+    const savedLang = localStorage.getItem(LANG_KEY)
     if (savedLang === 'en' || savedLang === 'ar') {
       language.value = savedLang
     }
@@ -78,7 +83,7 @@ onMounted(() => {
 watch(language, (value) => {
   applyLanguage()
   try {
-    localStorage.setItem('khututs-lang', value)
+    localStorage.setItem(LANG_KEY, value)
   } catch (error) {
     // Ignore storage errors.
   }
