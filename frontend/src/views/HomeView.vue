@@ -18,6 +18,7 @@ const props = defineProps({
 })
 
 const API_BASE = (import.meta.env.VITE_API_BASE || 'https://alkhat-api.onrender.com').replace(/\/$/, '')
+const API_ENABLED = import.meta.env.VITE_ENABLE_API === 'true' || import.meta.env.DEV
 const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://khututalrimal.ly'
 const heroFallback = '/ssss.webp'
 
@@ -310,6 +311,7 @@ const fetchSiteSettings = async () => {
 }
 
 const syncPublicData = async (force = false) => {
+  if (!API_ENABLED) return
   try {
     const setting = await fetchSiteSettings()
     const token = setting?.refresh_token || ''
@@ -345,9 +347,15 @@ onMounted(() => {
       animateStats()
     }
 
-    syncPublicData(true)
-    if (typeof window !== 'undefined') {
-      refreshInterval = setInterval(() => syncPublicData(false), 5000)
+    if (API_ENABLED) {
+      syncPublicData(true)
+      if (typeof window !== 'undefined') {
+        refreshInterval = setInterval(() => syncPublicData(false), 5000)
+      }
+    } else {
+      vehiclesLoading.value = false
+      statsLoading.value = false
+      settingsLoading.value = false
     }
   } catch (error) {
     // Never allow runtime errors to block rendering.
@@ -642,7 +650,7 @@ onUnmounted(() => {
     radial-gradient(circle, rgba(243, 226, 162, 0.3) 0, rgba(243, 226, 162, 0) 1.5px),
     radial-gradient(circle, rgba(212, 175, 55, 0.25) 0, rgba(212, 175, 55, 0) 1px);
   background-size: 220px 220px, 280px 280px, 320px 320px;
-  animation: stardustDrift 18s linear infinite;
+  animation: none;
   filter: none;
 }
 
@@ -658,7 +666,7 @@ onUnmounted(() => {
     mix-blend-mode: normal;
     filter: none;
     background-size: 180px 180px, 220px 220px, 260px 260px;
-    animation-duration: 24s;
+    animation: none;
   }
 
   :global(.dark) .stardust-layer {
@@ -674,15 +682,6 @@ onUnmounted(() => {
   100% {
     opacity: 1;
     transform: translateX(0);
-  }
-}
-
-@keyframes stardustDrift {
-  0% {
-    background-position: 0 0, 0 0, 0 0;
-  }
-  100% {
-    background-position: 220px 120px, -280px 160px, 160px -200px;
   }
 }
 
