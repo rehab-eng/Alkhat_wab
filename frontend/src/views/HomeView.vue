@@ -88,14 +88,6 @@ const setDisplayValues = () => {
 watch(displayStats, () => {
   setDisplayValues()
   hasAnimated.value = false
-  if (
-    typeof window !== 'undefined' &&
-    statsRef.value &&
-    statsRef.value.getBoundingClientRect().top < window.innerHeight
-  ) {
-    hasAnimated.value = true
-    animateStats()
-  }
 })
 
 watch(
