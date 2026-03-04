@@ -87,7 +87,11 @@ const setDisplayValues = () => {
 watch(displayStats, () => {
   setDisplayValues()
   hasAnimated.value = false
-  if (statsRef.value && statsRef.value.getBoundingClientRect().top < window.innerHeight) {
+  if (
+    typeof window !== 'undefined' &&
+    statsRef.value &&
+    statsRef.value.getBoundingClientRect().top < window.innerHeight
+  ) {
     hasAnimated.value = true
     animateStats()
   }
@@ -103,31 +107,43 @@ watch(
 )
 
 const animateStats = () => {
+  const nowFn =
+    typeof performance !== 'undefined' && typeof performance.now === 'function' ? () => performance.now() : () => Date.now()
+  const raf =
+    typeof requestAnimationFrame === 'function'
+      ? requestAnimationFrame
+      : (cb) => setTimeout(() => cb(nowFn()), 16)
+
   displayStats.value.forEach((stat, index) => {
     const duration = 1400 + index * 180
-    const start = performance.now()
+    const start = nowFn()
 
     const step = (now) => {
       const progress = Math.min((now - start) / duration, 1)
       const eased = 1 - Math.pow(1 - progress, 3)
       displayValues.value[index] = Math.floor(eased * stat.value)
       if (progress < 1) {
-        requestAnimationFrame(step)
+        raf(step)
       } else {
         displayValues.value[index] = stat.value
       }
     }
 
-    requestAnimationFrame(step)
+    raf(step)
   })
 }
 
 const formatStat = (index) => {
   const value = displayValues.value[index] ?? 0
   const suffix = displayStats.value[index]?.suffix || ''
-  const formatted = Number.isFinite(value)
-    ? new Intl.NumberFormat(props.language === 'ar' ? 'ar-LY' : 'en-US').format(value)
-    : value
+  let formatted = value
+  if (Number.isFinite(value)) {
+    try {
+      formatted = new Intl.NumberFormat(props.language === 'ar' ? 'ar-LY' : 'en-US').format(value)
+    } catch (error) {
+      formatted = value
+    }
+  }
   return `${formatted}${suffix}`
 }
 
@@ -184,6 +200,7 @@ const fetchStatistics = async () => {
 }
 
 const updateStructuredData = () => {
+  if (typeof document === 'undefined') return
   const name = siteSettings.value?.site_name_ar || siteSettings.value?.site_name_en || 'KHUTUT ALRIMAL'
   const phone = siteSettings.value?.contact_phone || ''
   const email = siteSettings.value?.contact_email || ''
@@ -260,8 +277,12 @@ const updateStructuredData = () => {
     script.textContent = JSON.stringify(data)
   }
 
-  upsert('org-schema', organization)
-  upsert('local-schema', localBusiness)
+  try {
+    upsert('org-schema', organization)
+    upsert('local-schema', localBusiness)
+  } catch (error) {
+    // Prevent structured data failures from breaking the UI.
+  }
 }
 
 const fetchSiteSettings = async () => {
@@ -281,33 +302,44 @@ const fetchSiteSettings = async () => {
 }
 
 const syncPublicData = async (force = false) => {
-  const setting = await fetchSiteSettings()
-  const token = setting?.refresh_token || ''
-  if (force || (token && token !== refreshToken.value)) {
-    refreshToken.value = token
-    await Promise.all([fetchVehicles(), fetchStatistics()])
+  try {
+    const setting = await fetchSiteSettings()
+    const token = setting?.refresh_token || ''
+    if (force || (token && token !== refreshToken.value)) {
+      refreshToken.value = token
+      await Promise.all([fetchVehicles(), fetchStatistics()])
+    }
+  } catch (error) {
+    // Never allow sync errors to break mounting.
   }
 }
 
 onMounted(() => {
   setDisplayValues()
 
-  observer = new IntersectionObserver(
-    (entries) => {
-      if (entries[0].isIntersecting && !hasAnimated.value) {
-        hasAnimated.value = true
-        animateStats()
-      }
-    },
-    { threshold: 0.35 }
-  )
+  if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+    observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasAnimated.value) {
+          hasAnimated.value = true
+          animateStats()
+        }
+      },
+      { threshold: 0.35 }
+    )
 
-  if (statsRef.value) {
-    observer.observe(statsRef.value)
+    if (statsRef.value) {
+      observer.observe(statsRef.value)
+    }
+  } else {
+    hasAnimated.value = true
+    animateStats()
   }
 
   syncPublicData(true)
-  refreshInterval = setInterval(() => syncPublicData(false), 5000)
+  if (typeof window !== 'undefined') {
+    refreshInterval = setInterval(() => syncPublicData(false), 5000)
+  }
 })
 
 onUnmounted(() => {
