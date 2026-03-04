@@ -18,7 +18,7 @@ const props = defineProps({
 })
 
 const API_BASE = (import.meta.env.VITE_API_BASE || 'https://alkhat-api.onrender.com').replace(/\/$/, '')
-const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://alkhat-wab.pages.dev'
+const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://khututalrimal.ly'
 const heroFallback = '/ssss.webp'
 
 const vehicles = ref([])

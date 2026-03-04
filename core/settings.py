@@ -26,7 +26,11 @@ SECRET_KEY = 'django-insecure-zju0a31(&wuza-ue-9r*_osmu2_brw*2it(v#go$u+h-eq9%9r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'khututalrimal.ly',
+    'www.khututalrimal.ly',
+    'alkhat-wab.pages.dev',
+]
 
 
 # Application definition
@@ -135,7 +139,15 @@ CLOUDINARY_URL = os.getenv('CLOUDINARY_URL')
 if CLOUDINARY_URL:
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    'https://khututalrimal.ly',
+    'https://www.khututalrimal.ly',
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://khututalrimal.ly',
+    'https://www.khututalrimal.ly',
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
